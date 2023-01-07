@@ -5,7 +5,7 @@ import { isObjEmpty, selectThemeColors } from '@utils'
 import classnames from 'classnames'
 import '@src/firebase'
 import { getAuth } from "firebase/auth"
-import { getDatabase, ref, set } from "firebase/database"
+import { getDatabase, ref, set, update } from "firebase/database"
 // ** Third Party Components
 import { useForm, Controller } from 'react-hook-form'
 import { ArrowLeft, ArrowRight } from 'react-feather'
@@ -57,8 +57,22 @@ const [value, setValue] = useState('')
   const onSubmit = data => {
 
 
-function writeUserData() {
-      set(ref(db, `users/${userData?.email.split("@")[0]}/address`), { address: data  })
+     if (isObjEmpty(errors)) {
+      stepper.next()
+      // const {city, zipcode, address} = data
+      // writeUserData(city, zipcode, address, data.country.value)
+    } else {
+      for (const key in data) {
+        if (data[key].length === 0) {
+          setError(key, {
+            type: 'manual',
+            message: `Please enter a valid ${key}`
+          })
+        } else {
+          console.log(data)
+          console.log(set)
+          function writeUserData() {
+      update(ref(db, `users/${userData?.email.split("@")[0]}/address`), data)
         .then(
           () => {
             console.log("done")
@@ -71,17 +85,6 @@ function writeUserData() {
     writeUserData()
 
       setData(data)
-     if (isObjEmpty(errors)) {
-      stepper.next()
-      const {city, zipcode, address} = data
-      writeUserData(city, zipcode, address, data.country.value)
-    } else {
-      for (const key in data) {
-        if (data[key].length === 0) {
-          setError(key, {
-            type: 'manual',
-            message: `Please enter a valid ${key}`
-          })
         }
       }
     }

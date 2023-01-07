@@ -82,18 +82,24 @@ const Login = () => {
   const onSubmit = (data, e) => {
     e.preventDefault()
     if (Object.values(data).every(field => field.length > 0)) {
+      const {password} = data
       const starCountRef = ref(firebase.database, `users/${data.email.split("@")[0]}`)
 onValue(starCountRef, (snapshot) => {
   const data = snapshot.val()
-  console.log(data)
-  dispatch(handleLogin(data))
+  if (data.password === password) {
+    dispatch(handleLogin(data))
   ability.update(data?.userData?.ability)
  
   // setRevenue(data)
       toast.success(
             <ToastContent name={data.fullName || data.username || 'John Doe'} role={data.role || 'admin'} />,
             { icon: false, transition: Slide, hideProgressBar: true, autoClose: 2000 }
-          )
+    )
+  } else {
+    toast.error(
+      <div>Incorrect password</div>
+    )
+  }
     
 })
       

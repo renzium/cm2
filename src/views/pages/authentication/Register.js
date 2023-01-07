@@ -2,9 +2,11 @@
 import { useContext, useState } from 'react'
 import { Link, Redirect, useHistory } from 'react-router-dom'
 import image from '@src/assets/images/logo/favicon.png'
+import { toast, Slide } from 'react-toastify'
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from '@firebase/auth'
-import { getDatabase, ref, set } from "firebase/database"
-import '@src/firebase'
+import { getDatabase, ref, set, onValue } from "firebase/database"
+import firebase from '../../../firebase'
+import  '@src/firebase'
 import ReCAPTCHA from 'react-google-recaptcha'
 // ** Custom Hooks
 import { useSkin } from '@hooks/useSkin'
@@ -40,6 +42,22 @@ const defaultValues = {
   console.log("Captcha value:", value)
 }
 */
+
+
+const ToastContent = ({ name, role }) => (
+  <Fragment>
+    <div className='toastify-header'>
+      <div className='title-wrapper'>
+        <Avatar size='sm' color='success' icon={<Coffee size={12} />} />
+        <h6 className='toast-title fw-bold'>Welcome, {name}</h6>
+      </div>
+    </div>
+    <div className='toastify-body'>
+      <span>You have successfully register in as an {role} user to Vuexy. Now you can start to explore. Enjoy!</span>
+    </div>
+  </Fragment>
+)
+
  
 const Register = () => {
   // ** Hooks
@@ -61,17 +79,10 @@ const Register = () => {
 
   const illustration = skin === 'dark' ? 'register-v2-dark.svg' : 'register-v2.svg',
     source = require(`@src/assets/images/pages/${illustration}`).default
+  
 
   const onSubmit = data => {
-  /*console.log(data)
-    // const auth = getAuth()
-    localStorage.setItem("cmId", data.email.split("@")[0])
-    function writeUserData() {
-      const db = getDatabase()
-      set(ref(db, `users/${data.email.split("@")[0]}`), {...data, revenue:{profit:0, capital: 0}})
-    }
-    writeUserData()
-*/
+
     data.recaptcha = recaptcha 
     data.role = "admin"
     data.ability = [
@@ -80,66 +91,42 @@ const Register = () => {
             subject: "all"
         }
     ]
-    data.id = data.email.split("@")[0]
-    data.accessToken = "mskmskmsk"
-    function writeUserData() {
-      const db = getDatabase()
-      set(ref(db, `users/${data.email.split("@")[0]}`), {...data, revenue:{profit:0, capital: 0}})
-    }
-    writeUserData()
-    // console.log("THE DATA", data)
-    ability.update(data.ability)
-
-      dispatch(handleLogin(data))
-      history.push(`/dashboard`)
+  
        const auth = getAuth()
     const tempData = { ...data }
     delete tempData.terms
     if (Object.values(tempData).every(field => field.length > 0) && data.terms === true) {
       const { username, email, password } = data
+        function writeUserData() {
+      const db = getDatabase()
+      set(ref(db, `users/${data.id}`), { ...data, revenue: { profit: 0, capital: 0 } })
+    }
       const blah = { ability, history, createUserWithEmailAndPassword, sendEmailVerification, dispatch, useJwt, handleLogin, auth, username, email, password }
       if (false) {
         console.log(blah)
       }
-
-      
-      // console.log(username, email, password)
-        //  const data = { ...res.data.user, accessToken: res.data.accessToken }
-            // ability.update(res.data.user.ability)
-            // console.log(data)
-      /*
-      useJwt
-        .register({ username, email, password })
-        .then(res => {
-        // console.log("THE RESULT FROM REGISTRATION", res)
-            createUserWithEmailAndPassword(auth, email, password)
-    .then((cred) => { 
-    // console.log("THE CRED", cred)
-      return sendEmailVerification(cred.user)
-      })
-          if (res.data.error) {
-            for (const property in res.data.error) {
-              if (res.data.error[property] !== null) {
-                setError(property, {
-                  type: 'manual',
-                  message: res.data.error[property]
-                })
-              }
-            }
-          } else {
-            const data = { ...res.data.user, accessToken: res.data.accessToken }
-            ability.update(res.data.user.ability)
-            console.log(data)
-            // dispatch(handleLogin(data))
-            // history.push(`./verify-email-cover/${email}`)
-          }
-        })
-        .catch(err => console.log(err))
-
-        */
-      /*
-
-      */
+        data.id = data.email.split("@")[0]
+      data.accessToken = "mskmskmsk"
+    const starCountRef = ref(firebase.database, `users/${data.id}`)
+    onValue(starCountRef, (snapshot) => {
+  const userExist = snapshot.val()
+      if (!userExist) {
+        writeUserData()
+         ability.update(data.ability)
+   toast.success(
+            <ToastContent name={data.fullName || data.username || 'John Doe'} role={ 'admin'} />,
+            { icon: false, transition: Slide, hideProgressBar: true, autoClose: 2000 }
+          )
+      dispatch(handleLogin(data))
+        history.push(`/dashboard`)
+        
+      } else {
+        toast.error(<div >This email {data.email} has already been</div>)
+  }
+  
+})
+  
+    // console.log("THE DATA", data)
     } else {
       for (const key in data) {
         if (data[key].length === 0) {

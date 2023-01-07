@@ -12,7 +12,7 @@ import '@styles/react/libs/flatpickr/flatpickr.scss'
 import { getAuth } from "firebase/auth"
 // ** Third Party Components
 import '@src/firebase'
-import { getDatabase, ref, set/*, push*/} from "firebase/database"
+import { getDatabase, ref, set, update /*, push*/} from "firebase/database"
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { ArrowLeft, ArrowRight } from 'react-feather'
@@ -46,16 +46,7 @@ const AccountDetails = ({ stepper }) => {
   const [userData, setUserData] = useState(null)
   const auth = getAuth()
   const userId = auth?.currentUser?.uid 
-//    function writeUserData(fullName, email, SSN, confirmSSN, DOB) {
-//   const db = getDatabase()
-//   push(ref(db, userId, `${'users/'}`), {
-//     fullName,
-//     email,
-//     SSN,
-//     confirmSSN,
-//     DOB
-//   })
-// }
+
 
   const {
     control,
@@ -71,12 +62,12 @@ const AccountDetails = ({ stepper }) => {
       setUserData(JSON.parse(localStorage.getItem('userData')))
     }
   }, [])
-
+console.log(set)
   const onSubmit = (data) => {
     console.log(data, userId)
       const db = getDatabase()
     function writeUserData() {
-      set(ref(db, `users/${userData?.email.split("@")[0]}/verification`), { accountDetails: data  })
+      update(ref(db, `users/${userData?.email.split("@")[0]}/personalInformation`), data)
         .then(
           () => {
             console.log("done")
@@ -144,7 +135,7 @@ const AccountDetails = ({ stepper }) => {
               control={control}
               render={({ field }) => <InputPasswordToggle onKeyPress={(event) => {
         if (!/[0-9]/.test(event.key)) {
-          event.preventDefault()
+          // event.preventDefault()
         }
       }} maxLength='9' invalid={errors.SSN && true} {...field} />}
             />
@@ -160,7 +151,7 @@ const AccountDetails = ({ stepper }) => {
               name='confirmSSN'
               render={({ field }) => <InputPasswordToggle onKeyPress={(event) => {
         if (!/[0-9]/.test(event.key)) {
-          event.preventDefault()
+          // event.preventDefault()
         }
       }} maxLength='9' invalid={errors.confirmSSN && true} {...field} />}
             />
