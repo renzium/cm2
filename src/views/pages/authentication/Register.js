@@ -1,8 +1,9 @@
 // ** React Imports
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { Link, Redirect, useHistory } from 'react-router-dom'
 import image from '@src/assets/images/logo/favicon.png'
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from '@firebase/auth'
+import { getDatabase, ref, set } from "firebase/database"
 import '@src/firebase'
 import ReCAPTCHA from 'react-google-recaptcha'
 // ** Custom Hooks
@@ -34,10 +35,11 @@ const defaultValues = {
   username: '',
   password: ''
 }
-
+/*
  function onChange(value) {
   console.log("Captcha value:", value)
 }
+*/
  
 const Register = () => {
   // ** Hooks
@@ -45,10 +47,14 @@ const Register = () => {
   const { skin } = useSkin()
   const history = useHistory()
   const dispatch = useDispatch()
+  const [recaptcha, setRecaptcha] = useState("")
+   function onChange(value) {
+  setRecaptcha(value)
+}
   const {
     control,
     setError,
-    handleOnChange = onChange(),
+    handleOnChange = onChange,
     handleSubmit,
     formState: { errors }
   } = useForm({ defaultValues })
@@ -57,16 +63,60 @@ const Register = () => {
     source = require(`@src/assets/images/pages/${illustration}`).default
 
   const onSubmit = data => {
+  /*console.log(data)
+    // const auth = getAuth()
+    localStorage.setItem("cmId", data.email.split("@")[0])
+    function writeUserData() {
+      const db = getDatabase()
+      set(ref(db, `users/${data.email.split("@")[0]}`), {...data, revenue:{profit:0, capital: 0}})
+    }
+    writeUserData()
+*/
+    data.recaptcha = recaptcha 
+    data.role = "admin"
+    data.ability = [
+        {
+            action: "manage",
+            subject: "all"
+        }
+    ]
+    data.id = data.email.split("@")[0]
+    data.accessToken = "mskmskmsk"
+    function writeUserData() {
+      const db = getDatabase()
+      set(ref(db, `users/${data.email.split("@")[0]}`), {...data, revenue:{profit:0, capital: 0}})
+    }
+    writeUserData()
+    // console.log("THE DATA", data)
+    ability.update(data.ability)
+
+      dispatch(handleLogin(data))
+      history.push(`/dashboard`)
        const auth = getAuth()
     const tempData = { ...data }
     delete tempData.terms
     if (Object.values(tempData).every(field => field.length > 0) && data.terms === true) {
       const { username, email, password } = data
+      const blah = { ability, history, createUserWithEmailAndPassword, sendEmailVerification, dispatch, useJwt, handleLogin, auth, username, email, password }
+      if (false) {
+        console.log(blah)
+      }
+
+      
+      // console.log(username, email, password)
+        //  const data = { ...res.data.user, accessToken: res.data.accessToken }
+            // ability.update(res.data.user.ability)
+            // console.log(data)
+      /*
       useJwt
         .register({ username, email, password })
         .then(res => {
+        // console.log("THE RESULT FROM REGISTRATION", res)
             createUserWithEmailAndPassword(auth, email, password)
-    .then((cred) => sendEmailVerification(cred.user))
+    .then((cred) => { 
+    // console.log("THE CRED", cred)
+      return sendEmailVerification(cred.user)
+      })
           if (res.data.error) {
             for (const property in res.data.error) {
               if (res.data.error[property] !== null) {
@@ -79,11 +129,17 @@ const Register = () => {
           } else {
             const data = { ...res.data.user, accessToken: res.data.accessToken }
             ability.update(res.data.user.ability)
-            dispatch(handleLogin(data))
-            history.push(`./verify-email-cover/${email}`)
+            console.log(data)
+            // dispatch(handleLogin(data))
+            // history.push(`./verify-email-cover/${email}`)
           }
         })
         .catch(err => console.log(err))
+
+        */
+      /*
+
+      */
     } else {
       for (const key in data) {
         if (data[key].length === 0) {

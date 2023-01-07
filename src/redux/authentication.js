@@ -6,6 +6,10 @@ import useJwt from '@src/auth/jwt/useJwt'
 
 const config = useJwt.jwtConfig
 
+function doRefresh() {
+window.location.reload(false)
+}
+
 const initialUser = () => {
   const item = window.localStorage.getItem('userData')
   //** Parse stored json or if none return initialValue
@@ -25,6 +29,7 @@ export const authSlice = createSlice({
       localStorage.setItem('userData', JSON.stringify(action.payload))
       localStorage.setItem(config.storageTokenKeyName, JSON.stringify(action.payload.accessToken))
       localStorage.setItem(config.storageRefreshTokenKeyName, JSON.stringify(action.payload.refreshToken))
+      doRefresh()
     },
     handleLogout: state => {
       state.userData = {}

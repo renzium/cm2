@@ -61,6 +61,10 @@ const walletOptions = [
 ]
 
 const data = []
+const defaultValues = {
+  cardName: '',
+  cardNumber: ''
+}
 
 const WithdrawMethods = () => {
   // ** States
@@ -76,9 +80,10 @@ const WithdrawMethods = () => {
     setError,
     handleSubmit,
     formState: { errors }
-  } = useForm({ defaultValues: { cardInput: '' }, routingInput: '' })
+  } = useForm({ defaultValues })
 
   const onSubmit = data => {
+    console.log(data)
     if (data.routingInput.length <= 9) {
       setError('routingInput', {
         type: 'manual',
@@ -177,14 +182,14 @@ const WithdrawMethods = () => {
                       </Label>
                       <InputGroup>
                         <Controller
-                          id='credit-card'
-                          name='cardInput'
+                          id='cardNumber'
+                          name='cardNumber'
                           control={control}
                           placeholder='1356 3215 6548 7898'
                           render={({ field }) => (
                             <Cleave
                               {...field}
-                              name='cardInput'
+                              name='cardNumber'
                               className={classnames('form-control', { 'is-invalid': errors.cardInput })}
                               options={{ creditCard: true, onCreditCardTypeChanged: type => setCardType(type) }}
                             />
@@ -201,21 +206,43 @@ const WithdrawMethods = () => {
                       ) : null}
                     </Col>
                     <Col md={6}>
-                      <Label className='form-label' for='card-name'>
+                      <Label className='form-label' for='cardName'>
                         Name On Card
                       </Label>
-                      <Input id='card-name' placeholder='John Doe' />
+                      {/* <Input id='card-name' placeholder='John Doe' /> */ }
+                        <Controller
+                          id='cardName'
+                          name='cardName'
+                          control={control}
+                          placeholder='1356 3215 6548 7898'
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              name='cardName'
+                              type='text'
+                            />
+                          )}
+                        />
                     </Col>
                     <Col xs={6} md={3}>
                       <Label className='form-label' for='exp-date'>
                         Exp. Date
                       </Label>
-                      <Cleave
-                        id='exp-date'
-                        placeholder='MM/YY'
+                          <Controller
+                           id='expDate'
+                          name='expDate'
+                          control={control}
+                         placeholder='MM/YY'
+                          render={({ field }) => (
+                            <Cleave
+                              {...field}
+                              name='expDate'
+                                placeholder='MM/YY'
                         className='form-control'
                         options={{ delimiter: '/', blocks: [2, 2] }}
-                      />
+                            />
+                          )}
+                        />
                     </Col>
                     <Col xs={6} md={3}>
                       <Label className='form-label' for='cvv'>

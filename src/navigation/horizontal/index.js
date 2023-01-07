@@ -4,4 +4,4 @@ import others from './others'
 import dashboards from './dashboards'
 
 // ** Merge & Export
-export default [...dashboards, ...pages, ...others]
+export default [...dashboards, ...pages, ...others] 

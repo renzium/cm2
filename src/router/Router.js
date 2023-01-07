@@ -75,6 +75,7 @@ const Router = () => {
     }
 
     if (
+      // false
       (!isUserLoggedIn() && route.meta === undefined) ||
       (!isUserLoggedIn() && route.meta && !route.meta.authRoute && !route.meta.publicRoute)
     ) {
@@ -86,10 +87,13 @@ const Router = () => {
        */
 
       return <Redirect to='/login' />
-    } else if (route.meta && route.meta.authRoute && isUserLoggedIn()) {
+    } else if (
+      route.meta && route.meta.authRoute && isUserLoggedIn()
+      // route.meta && route.meta.authRoute && isUserLoggedIn()
+    ) {
       // ** If route has meta and authRole and user is Logged in then redirect user to home page (DefaultRoute)
       return <Redirect to='/' />
-    } else if (isUserLoggedIn() && !ability.can(action || 'read', resource)) {
+    } else if (isUserLoggedIn() && !ability.can(action || 'read', resource) && false) {
       // ** If user is Logged in and doesn't have ability to visit the page redirect the user to Not Authorized
       return <Redirect to='/misc/not-authorized' />
     } else {
@@ -102,7 +106,7 @@ const Router = () => {
   const ResolveRoutes = () => {
     return Object.keys(Layouts).map((layout, index) => {
       // ** Convert Layout parameter to Layout Component
-      // ? Note: make sure to keep layout and component name equal
+      // ? Note: make sure to keep layout and component name equalz
 
       const LayoutTag = Layouts[layout]
 
@@ -193,13 +197,14 @@ const Router = () => {
   }
 
   return (
-    <AppRouter basename={process.env.REACT_APP_BASENAME}>
+    <AppRouter >
       <Switch>
         {/* If user is logged in Redirect user to DefaultRoute else to login */}
         <Route
           exact
           path='/'
           render={() => {
+            // return false ? <Redirect to={DefaultRoute} /> : <Redirect to='/login' />
             return isUserLoggedIn() ? <Redirect to={DefaultRoute} /> : <Redirect to='/login' />
           }}
         />
@@ -209,6 +214,7 @@ const Router = () => {
           path='/misc/not-authorized'
           render={() => (
             <Layouts.BlankLayout>
+              {/* { Routes.map((ele, index) =>  { console.log(index);  return index ===  0 &&  <ele.component/> })} */}
               <NotAuthorized />
             </Layouts.BlankLayout>
           )}

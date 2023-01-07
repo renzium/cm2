@@ -1,11 +1,11 @@
 // ** React Imports
-import { Fragment, useState, useMemo } from 'react'
+import { Fragment, useState, useMemo, useEffect } from 'react'
 import CountrySelector from './CountrySelector'
 import { isObjEmpty, selectThemeColors } from '@utils'
 import classnames from 'classnames'
 import '@src/firebase'
 import { getAuth } from "firebase/auth"
-import { getDatabase, ref, push } from "firebase/database"
+import { getDatabase, ref, set } from "firebase/database"
 // ** Third Party Components
 import { useForm, Controller } from 'react-hook-form'
 import { ArrowLeft, ArrowRight } from 'react-feather'
@@ -25,17 +25,17 @@ const defaultValues = {
 
 const Address = ({ stepper }) => {
   // ** Hooks
+  // const [userData, setUserData] = useState(null)
   const auth = getAuth()
-  const userId = auth.currentUser.uid
-  function writeUserData(city, zipcode, address, country) {
+  const userId = auth?.currentUser?.uid
+  const userData = JSON.parse(localStorage.getItem('userData'))
   const db = getDatabase()
-  push(ref(db, userId, `${'users/'}`), {
-    city,
-    zipcode,
-    address,
-    country
-  })
-}
+  // useEffect(() => {
+  //   if (isUserLoggedIn() !== null) {
+  //     setUserData(JSON.parse(localStorage.getItem('userData')))
+  //   }
+  // }, [])
+console.log(useEffect, userId)
 
 
 const [data, setData] = useState(null)
@@ -55,6 +55,21 @@ const [value, setValue] = useState('')
   } = useForm({ defaultValues })
 
   const onSubmit = data => {
+
+
+function writeUserData() {
+      set(ref(db, `users/${userData?.email.split("@")[0]}/address`), { address: data  })
+        .then(
+          () => {
+            console.log("done")
+          }
+        )
+        .catch((error) => {
+        console.log(error)
+      })
+    }
+    writeUserData()
+
       setData(data)
      if (isObjEmpty(errors)) {
       stepper.next()
@@ -85,7 +100,7 @@ const [value, setValue] = useState('')
               Address
             </Label>
             <Controller
-              value={address}
+              // value={address}
               id='address'
               name='address'
               control={control}
@@ -100,7 +115,7 @@ const [value, setValue] = useState('')
               City
             </Label>
             <Controller
-              value={city}
+              // value={city}
               id='city'
               name='city'
               control={control}
@@ -117,7 +132,7 @@ const [value, setValue] = useState('')
               Zipcode
             </Label>
             <Controller
-              value={zipcode}
+              // value={zipcode}
               id='zipcode'
               name='zipcode'
               control={control}
@@ -130,7 +145,7 @@ const [value, setValue] = useState('')
               Country
             </Label>
             <Controller
-              value={country}
+              // value={country}
               id='country'
               name='country'
               control={control}

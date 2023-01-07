@@ -12,7 +12,7 @@ import '@styles/react/libs/flatpickr/flatpickr.scss'
 import { getAuth } from "firebase/auth"
 // ** Third Party Components
 import '@src/firebase'
-import { getDatabase, ref, push} from "firebase/database"
+import { getDatabase, ref, set/*, push*/} from "firebase/database"
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { ArrowLeft, ArrowRight } from 'react-feather'
@@ -45,17 +45,17 @@ const AccountDetails = ({ stepper }) => {
   const [data, setData] = useState(null)
   const [userData, setUserData] = useState(null)
   const auth = getAuth()
-  const userId = auth.currentUser.uid
-   function writeUserData(fullName, email, SSN, confirmSSN, DOB) {
-  const db = getDatabase()
-  push(ref(db, userId, `${'users/'}`), {
-    fullName,
-    email,
-    SSN,
-    confirmSSN,
-    DOB
-  })
-}
+  const userId = auth?.currentUser?.uid 
+//    function writeUserData(fullName, email, SSN, confirmSSN, DOB) {
+//   const db = getDatabase()
+//   push(ref(db, userId, `${'users/'}`), {
+//     fullName,
+//     email,
+//     SSN,
+//     confirmSSN,
+//     DOB
+//   })
+// }
 
   const {
     control,
@@ -73,13 +73,30 @@ const AccountDetails = ({ stepper }) => {
   }, [])
 
   const onSubmit = (data) => {
+    console.log(data, userId)
+      const db = getDatabase()
+    function writeUserData() {
+      set(ref(db, `users/${userData?.email.split("@")[0]}/verification`), { accountDetails: data  })
+        .then(
+          () => {
+            console.log("done")
+          }
+        )
+        .catch((error) => {
+        console.log(error)
+      })
+    }
+    writeUserData()
+
+
       setData(data)
     if (isObjEmpty(errors)) {
       stepper.next()
-  const {fullName, SSN, confirmSSN, DOB} = data
-      writeUserData(fullName, userData && userData["email"], SSN, confirmSSN, String(new Date(data.DOB)))
+  // const {fullName, SSN, confirmSSN, DOB} = data
+      // writeUserData(fullName, userData && userData["email"], SSN, confirmSSN, String(new Date(data.DOB)))
     }
   }
+
 
   return (
     <Fragment>
@@ -110,7 +127,7 @@ const AccountDetails = ({ stepper }) => {
               id='email'
               name='email'
               render={() => (
-                <Input type='email' readOnly value={(userData && userData['email']) || ''} />
+                <Input type='email' readOnly value={(userData && userData['email']) } />
               )}
             />
             {errors.email && <FormFeedback>{errors.email.message}</FormFeedback>}

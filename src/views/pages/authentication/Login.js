@@ -1,10 +1,12 @@
 // ** React Imports
-import { useContext, Fragment } from 'react'
+import { useContext, Fragment, useEffect} from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import ReCAPTCHA from 'react-google-recaptcha'
+import { ref, onValue } from "firebase/database"
+import firebase from "../../../firebase"
 // ** Custom Hooks
 import { useSkin } from '@hooks/useSkin'
-import useJwt from '@src/auth/jwt/useJwt'
+// import useJwt from '@src/auth/jwt/useJwt'
 import image from '@src/assets/images/logo/favicon.png'
 // ** Third Party Components
 import { useDispatch } from 'react-redux'
@@ -23,7 +25,7 @@ import Avatar from '@components/avatar'
 import InputPasswordToggle from '@components/input-password-toggle'
 
 // ** Utils
-import { getHomeRouteForLoggedInUser } from '@utils'
+// import { getHomeRouteForLoggedInUser } from '@utils'
 
 // ** Reactstrap Imports
 import { Row, Col, Form, Input, Label, Alert, Button, CardText, CardTitle, UncontrolledTooltip } from 'reactstrap'
@@ -31,9 +33,9 @@ import { Row, Col, Form, Input, Label, Alert, Button, CardText, CardTitle, Uncon
 // ** Styles
 import '@styles/react/pages/page-authentication.scss'
 
-function onChange(value) {
-  console.log("Captcha value:", value)
-}
+// function onChange(value) {
+//   console.log("Captcha value:", value)
+// }
 
 const ToastContent = ({ name, role }) => (
   <Fragment>
@@ -50,14 +52,15 @@ const ToastContent = ({ name, role }) => (
 )
 
 const defaultValues = {
-  password: 'admin',
-  loginEmail: 'admin@demo.com'
+  password: '',
+  email: ''
 }
 
 const Login = () => {
   // ** Hooks
+  // const [reloadApp, setReloadApp] = useState(false)
   const { skin } = useSkin()
-  const handleOnChange = onChange()
+  // const handleOnChange = onChange()
   const dispatch = useDispatch()
   const history = useHistory()
   const ability = useContext(AbilityContext)
@@ -69,11 +72,35 @@ const Login = () => {
   } = useForm({ defaultValues })
   const illustration = skin === 'dark' ? 'login-v2-dark.svg' : 'login-v2.svg',
     source = require(`@src/assets/images/pages/${illustration}`).default
+  
+  useEffect(() => {
+    
 
-  const onSubmit = data => {
+  }, [])
+
+
+  const onSubmit = (data, e) => {
+    e.preventDefault()
     if (Object.values(data).every(field => field.length > 0)) {
+      const starCountRef = ref(firebase.database, `users/${data.email.split("@")[0]}`)
+onValue(starCountRef, (snapshot) => {
+  const data = snapshot.val()
+  console.log(data)
+  dispatch(handleLogin(data))
+  ability.update(data?.userData?.ability)
+ 
+  // setRevenue(data)
+      toast.success(
+            <ToastContent name={data.fullName || data.username || 'John Doe'} role={data.role || 'admin'} />,
+            { icon: false, transition: Slide, hideProgressBar: true, autoClose: 2000 }
+          )
+    
+})
+      
+      
+      /*
       useJwt
-        .login({ email: data.loginEmail, password: data.password })
+        .login({ email: data.email, password: data.password })
         .then(res => {
           const data = { ...res.data.userData, accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }
           dispatch(handleLogin(data))
@@ -85,6 +112,7 @@ const Login = () => {
           )
         })
         .catch(err => console.log(err))
+        */
     } else {
       for (const key in data) {
         if (data[key].length === 0) {
@@ -94,6 +122,8 @@ const Login = () => {
         }
       }
     }
+    console.log("Hey")
+       history.push("/dashboard")
   }
 
   return (
@@ -114,21 +144,21 @@ const Login = () => {
               Welcome to Coin Mercari! 👋
             </CardTitle>
             <CardText className='mb-2'>Please sign-in to your account and Investing</CardText>
-            <Form className='auth-login-form mt-2' onSubmit={handleSubmit(onSubmit)}>
+            <Form className='auth-login-form mt-2' onSubmit={ (e) => { e.preventDefault(); handleSubmit(onSubmit)(e) }}>
               <div className='mb-1'>
                 <Label className='form-label' for='login-email'>
                   Email
                 </Label>
                 <Controller
-                  id='loginEmail'
-                  name='loginEmail'
+                  id='email'
+                  name='email'
                   control={control}
                   render={({ field }) => (
                     <Input
                       autoFocus
                       type='email'
                       placeholder='john@example.com'
-                      invalid={errors.loginEmail && true}
+                      invalid={errors.email && true}
                       {...field}
                     />
                   )}
@@ -160,19 +190,19 @@ const Login = () => {
               </div>
               <ReCAPTCHA
                   sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-                  onChange = { handleOnChange }
+                  // onChange = { handleOnChange }
                           />
                <div>
                <br></br>
                </div>
-              <Button type='submit' color='primary' block>
+              <Button  type='submit' color='primary' block>
                 Sign in
               </Button>
             </Form>
             <p className='text-center mt-2'>
               <span className='me-25'>New on our platform?</span>
               <Link to='/register'>
-                <span>Create an account</span>
+                <span onClick={() => history.push("/dashboard")}>Create an account</span>
               </Link>
             </p>
             <div className='divider my-2'>

@@ -89,7 +89,7 @@ const Wizard = forwardRef((props, ref) => {
       })}
     >
       <div className={classnames('bs-stepper-header', { [headerClassName]: headerClassName })}>{renderHeader()}</div>
-      <div className='bs-stepper-content'>{renderContent()}</div>
+       <div className='bs-stepper-content'>{renderContent()}</div> 
     </div>
   )
 })

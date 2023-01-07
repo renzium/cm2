@@ -128,6 +128,7 @@ const handleCopy = ({ target: { value } }) => {
         message: 'Please Enter Valid Routing Number'
       })
     }
+    console.log(data)
   }
 
   const selectedCondition = selected !== null
