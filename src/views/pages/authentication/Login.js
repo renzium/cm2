@@ -1,5 +1,5 @@
 // ** React Imports
-import { useContext, Fragment } from 'react'
+import { useContext, Fragment, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import ReCAPTCHA from 'react-google-recaptcha'
 // ** Custom Hooks
@@ -31,9 +31,9 @@ import { Row, Col, Form, Input, Label, Alert, Button, CardText, CardTitle, Uncon
 // ** Styles
 import '@styles/react/pages/page-authentication.scss'
 
-function onChange(value) {
-  console.log("Captcha value:", value)
-}
+// function onChange(value) {
+//   console.log("Captcha value:", value)
+// }
 
 const ToastContent = ({ name, role }) => (
   <Fragment>
@@ -55,6 +55,11 @@ const defaultValues = {
 }
 
 const Login = () => {
+  const [recaptcha, setRecaptcha] = useState("")
+
+  function onChange(value) {
+    setRecaptcha(value)
+  }
   // ** Hooks
   const { skin } = useSkin()
   const handleOnChange = onChange
@@ -73,9 +78,9 @@ const Login = () => {
   const onSubmit = data => {
     if (Object.values(data).every(field => field.length > 0)) {
       useJwt
-        .login({ email: data.loginEmail, password: data.password })
+        .login({ email: data.loginEmail, password: data.password, recaptcha})
         .then(res => {
-          const data = { ...res.data.userData, accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }
+          const data = { ...res.data.userData, accessToken: res.data.accessToken, refreshToken: res.data.refreshToken, recaptcha }
           dispatch(handleLogin(data))
           ability.update(res.data.userData.ability)
           history.push(getHomeRouteForLoggedInUser(data.role))
