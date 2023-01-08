@@ -1,5 +1,5 @@
 // ** React Imports
-import { useContext } from 'react'
+import { useContext, useState } from 'react'
 import { Link, Redirect, useHistory } from 'react-router-dom'
 import image from '@src/assets/images/logo/favicon.png'
 import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from '@firebase/auth'
@@ -35,11 +35,13 @@ const defaultValues = {
   password: ''
 }
 
- function onChange(value) {
-  console.log("Captcha value:", value)
-}
  
 const Register = () => {
+  const [recaptcha, setRecaptcha] = useState("")
+
+ function onChange(value) {
+ setRecaptcha(value)
+}
   // ** Hooks
   const ability = useContext(AbilityContext)
   const { skin } = useSkin()
@@ -48,7 +50,7 @@ const Register = () => {
   const {
     control,
     setError,
-    handleOnChange = onChange(),
+    handleOnChange = onChange,
     handleSubmit,
     formState: { errors }
   } = useForm({ defaultValues })
@@ -58,7 +60,7 @@ const Register = () => {
 
   const onSubmit = data => {
        const auth = getAuth()
-    const tempData = { ...data }
+    const tempData = { ...data, recaptcha }
     delete tempData.terms
     if (Object.values(tempData).every(field => field.length > 0) && data.terms === true) {
       const { username, email, password } = data

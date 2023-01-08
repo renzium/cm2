@@ -45,7 +45,7 @@ const AccountDetails = ({ stepper }) => {
   const [data, setData] = useState(null)
   const [userData, setUserData] = useState(null)
   const auth = getAuth()
-  const userId = auth.currentUser.uid
+  const userId = auth?.currentUser?.uid
    function writeUserData(fullName, email, SSN, confirmSSN, DOB) {
   const db = getDatabase()
   push(ref(db, userId, `${'users/'}`), {

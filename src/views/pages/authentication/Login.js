@@ -57,7 +57,7 @@ const defaultValues = {
 const Login = () => {
   // ** Hooks
   const { skin } = useSkin()
-  const handleOnChange = onChange()
+  const handleOnChange = onChange
   const dispatch = useDispatch()
   const history = useHistory()
   const ability = useContext(AbilityContext)

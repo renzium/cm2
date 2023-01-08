@@ -26,21 +26,21 @@ const defaultValues = {
 const Address = ({ stepper }) => {
   // ** Hooks
   const auth = getAuth()
-  const userId = auth.currentUser.uid
+  const userId = auth?.currentUser?.uid
   function writeUserData(city, zipcode, address, country) {
-  const db = getDatabase()
-  push(ref(db, userId, `${'users/'}`), {
-    city,
-    zipcode,
-    address,
-    country
-  })
-}
+    const db = getDatabase()
+    push(ref(db, userId, `${'users/'}`), {
+      city,
+      zipcode,
+      address,
+      country
+    })
+  }
 
 
-const [data, setData] = useState(null)
+  const [data, setData] = useState(null)
 
-const [value, setValue] = useState('')
+  const [value, setValue] = useState('')
   const options = useMemo(() => countryList().getData(), [])
 
   const changeHandler = value => {
@@ -55,10 +55,10 @@ const [value, setValue] = useState('')
   } = useForm({ defaultValues })
 
   const onSubmit = data => {
-      setData(data)
-     if (isObjEmpty(errors)) {
+    setData(data)
+    if (isObjEmpty(errors)) {
       stepper.next()
-      const {city, zipcode, address} = data
+      const { city, zipcode, address } = data
       writeUserData(city, zipcode, address, data.country.value)
     } else {
       for (const key in data) {
@@ -78,37 +78,37 @@ const [value, setValue] = useState('')
         <h5 className='mb-0'>Address</h5>
         <small>Enter Your Address.</small>
       </div>
-      <Form onSubmit={handleSubmit(data => onSubmit(data))}>
+      <Form onSubmit={ handleSubmit(data => onSubmit(data)) }>
         <Row>
           <Col md='6' className='mb-1'>
             <Label className='form-label' for='address'>
               Address
             </Label>
             <Controller
-              value={address}
+              // value={ address }
               id='address'
               name='address'
-              control={control}
-              render={({ field }) => (
-                <Input invalid={errors.address && true} {...field} />
-              )}
+              control={ control }
+              render={ ({ field }) => (
+                <Input invalid={ errors.address && true } { ...field } />
+              ) }
             />
-            {errors.address && <FormFeedback>{errors.address.message}</FormFeedback>}
+            { errors.address && <FormFeedback>{ errors.address.message }</FormFeedback> }
           </Col>
           <Col md='6' className='mb-1'>
             <Label className='form-label' for='city'>
               City
             </Label>
             <Controller
-              value={city}
+              // value={ city }
               id='city'
               name='city'
-              control={control}
-              render={({ field }) => (
-                <Input invalid={errors.city && true} {...field} />
-              )}
+              control={ control }
+              render={ ({ field }) => (
+                <Input invalid={ errors.city && true } { ...field } />
+              ) }
             />
-            {errors.city && <FormFeedback>{errors.city.message}</FormFeedback>}
+            { errors.city && <FormFeedback>{ errors.city.message }</FormFeedback> }
           </Col>
         </Row>
         <Row>
@@ -117,37 +117,37 @@ const [value, setValue] = useState('')
               Zipcode
             </Label>
             <Controller
-              value={zipcode}
+              // value={ zipcode }
               id='zipcode'
               name='zipcode'
-              control={control}
-              render={({ field }) => <Input maxLength='6' invalid={errors.zipcode && true} {...field} />}
+              control={ control }
+              render={ ({ field }) => <Input maxLength='6' invalid={ errors.zipcode && true } { ...field } /> }
             />
-            {errors.zipcode && <FormFeedback>{errors.zipcode.message}</FormFeedback>}
+            { errors.zipcode && <FormFeedback>{ errors.zipcode.message }</FormFeedback> }
           </Col>
           <Col md='6' className='mb-1'>
             <Label className='form-label' for='country'>
               Country
             </Label>
             <Controller
-              value={country}
+              // value={ country }
               id='country'
               name='country'
-              control={control}
-              render={({ field }) => <Select theme={selectThemeColors} className={classnames('react-select', { 'is-invalid': data !== null && data.country === null })} options={options} value={value} onChange={changeHandler}
-                  {...field}
-                  />}
-                  />
+              control={ control }
+              render={ ({ field }) => <Select theme={ selectThemeColors } className={ classnames('react-select', { 'is-invalid': data !== null && data.country === null }) } options={ options } value={ value } onChange={ changeHandler }
+                { ...field }
+              /> }
+            />
           </Col>
         </Row>
         <div className='d-flex justify-content-between'>
-          <Button type='button' color='primary' className='btn-prev' onClick={() => stepper.previous()}>
-            <ArrowLeft size={14} className='align-middle me-sm-25 me-0'></ArrowLeft>
+          <Button type='button' color='primary' className='btn-prev' onClick={ () => stepper.previous() }>
+            <ArrowLeft size={ 14 } className='align-middle me-sm-25 me-0'></ArrowLeft>
             <span className='align-middle d-sm-inline-block d-none'>Previous</span>
           </Button>
           <Button type='submit' color='primary' className='btn-next'>
             <span className='align-middle d-sm-inline-block d-none'>Next</span>
-            <ArrowRight size={14} className='align-middle ms-sm-25 ms-0'></ArrowRight>
+            <ArrowRight size={ 14 } className='align-middle ms-sm-25 ms-0'></ArrowRight>
           </Button>
         </div>
       </Form>
