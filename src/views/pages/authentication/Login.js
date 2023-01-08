@@ -39,12 +39,12 @@ const ToastContent = ({ name, role }) => (
   <Fragment>
     <div className='toastify-header'>
       <div className='title-wrapper'>
-        <Avatar size='sm' color='success' icon={<Coffee size={12} />} />
-        <h6 className='toast-title fw-bold'>Welcome, {name}</h6>
+        <Avatar size='sm' color='success' icon={ <Coffee size={ 12 } /> } />
+        <h6 className='toast-title fw-bold'>Welcome, { name }</h6>
       </div>
     </div>
     <div className='toastify-body'>
-      <span>You have successfully logged in as an {role} user to Vuexy. Now you can start to explore. Enjoy!</span>
+      <span>You have successfully logged in as an { role } user to Vuexy. Now you can start to explore. Enjoy!</span>
     </div>
   </Fragment>
 )
@@ -74,18 +74,19 @@ const Login = () => {
   } = useForm({ defaultValues })
   const illustration = skin === 'dark' ? 'login-v2-dark.svg' : 'login-v2.svg',
     source = require(`@src/assets/images/pages/${illustration}`).default
-
+console.log(recaptcha)
   const onSubmit = data => {
     if (Object.values(data).every(field => field.length > 0)) {
+      console.log(data.loginEmail, data.password)
       useJwt
-        .login({ email: data.loginEmail, password: data.password, recaptcha})
+        .login({ email: data.loginEmail, password: data.password })
         .then(res => {
-          const data = { ...res.data.userData, accessToken: res.data.accessToken, refreshToken: res.data.refreshToken, recaptcha }
+          const data = { ...res.data.userData, accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }
           dispatch(handleLogin(data))
           ability.update(res.data.userData.ability)
           history.push(getHomeRouteForLoggedInUser(data.role))
           toast.success(
-            <ToastContent name={data.fullName || data.username || 'John Doe'} role={data.role || 'admin'} />,
+            <ToastContent name={ data.fullName || data.username || 'John Doe' } role={ data.role || 'admin' } />,
             { icon: false, transition: Slide, hideProgressBar: true, autoClose: 2000 }
           )
         })
@@ -104,13 +105,13 @@ const Login = () => {
   return (
     <div className='auth-wrapper auth-cover'>
       <Row className='auth-inner m-0'>
-    <Link className='brand-logo' to='/' onClick={e => e.preventDefault()}>
-        <img src={image} alt='logo'/>
+        <Link className='brand-logo' to='/' onClick={ e => e.preventDefault() }>
+          <img src={ image } alt='logo' />
           <h2 className='brand-text text-primary ms-1'>Coin Mercari</h2>
         </Link>
         <Col className='d-none d-lg-flex align-items-center p-5' lg='8' sm='12'>
           <div className='w-100 d-lg-flex align-items-center justify-content-center px-5'>
-            <img className='img-fluid' src={source} alt='Login Cover' />
+            <img className='img-fluid' src={ source } alt='Login Cover' />
           </div>
         </Col>
         <Col className='d-flex align-items-center auth-bg px-2 p-lg-5' lg='4' sm='12'>
@@ -119,7 +120,7 @@ const Login = () => {
               Welcome to Coin Mercari! 👋
             </CardTitle>
             <CardText className='mb-2'>Please sign-in to your account and Investing</CardText>
-            <Form className='auth-login-form mt-2' onSubmit={handleSubmit(onSubmit)}>
+            <Form className='auth-login-form mt-2' onSubmit={ handleSubmit(onSubmit) }>
               <div className='mb-1'>
                 <Label className='form-label' for='login-email'>
                   Email
@@ -127,16 +128,16 @@ const Login = () => {
                 <Controller
                   id='loginEmail'
                   name='loginEmail'
-                  control={control}
-                  render={({ field }) => (
+                  control={ control }
+                  render={ ({ field }) => (
                     <Input
                       autoFocus
                       type='email'
                       placeholder='john@example.com'
-                      invalid={errors.loginEmail && true}
-                      {...field}
+                      invalid={ errors.loginEmail && true }
+                      { ...field }
                     />
-                  )}
+                  ) }
                 />
               </div>
               <div className='mb-1'>
@@ -151,10 +152,10 @@ const Login = () => {
                 <Controller
                   id='password'
                   name='password'
-                  control={control}
-                  render={({ field }) => (
-                    <InputPasswordToggle className='input-group-merge' invalid={errors.password && true} {...field} />
-                  )}
+                  control={ control }
+                  render={ ({ field }) => (
+                    <InputPasswordToggle className='input-group-merge' invalid={ errors.password && true } { ...field } />
+                  ) }
                 />
               </div>
               <div className='form-check mb-1'>
@@ -164,12 +165,12 @@ const Login = () => {
                 </Label>
               </div>
               <ReCAPTCHA
-                  sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-                  onChange = { handleOnChange }
-                          />
-               <div>
-               <br></br>
-               </div>
+                sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+                onChange={ handleOnChange }
+              />
+              <div>
+                <br></br>
+              </div>
               <Button type='submit' color='primary' block>
                 Sign in
               </Button>
@@ -185,16 +186,16 @@ const Login = () => {
             </div>
             <div className='auth-footer-btn d-flex justify-content-center'>
               <Button color='facebook'>
-                <Facebook size={14} />
+                <Facebook size={ 14 } />
               </Button>
               <Button color='twitter'>
-                <Twitter size={14} />
+                <Twitter size={ 14 } />
               </Button>
               <Button color='google'>
-                <Mail size={14} />
+                <Mail size={ 14 } />
               </Button>
               <Button className='me-0' color='github'>
-                <GitHub size={14} />
+                <GitHub size={ 14 } />
               </Button>
             </div>
           </Col>
