@@ -67,8 +67,11 @@ const Register = () => {
       useJwt
         .register({ username, email, password })
         .then(res => {
-            createUserWithEmailAndPassword(auth, email, password)
-    .then((cred) => sendEmailVerification(cred.user))
+            createUserWithEmailAndPassword(auth, email, password, username)
+              .then((cred) => {
+                sendEmailVerification(cred.user)
+              }
+              )
           if (res.data.error) {
             for (const property in res.data.error) {
               if (res.data.error[property] !== null) {

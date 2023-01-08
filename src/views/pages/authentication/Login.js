@@ -4,7 +4,8 @@ import { Link, useHistory } from 'react-router-dom'
 import ReCAPTCHA from 'react-google-recaptcha'
 // ** Custom Hooks
 import { useSkin } from '@hooks/useSkin'
-import useJwt from '@src/auth/jwt/useJwt'
+
+// import useJwt from '@src/auth/jwt/useJwt'
 import image from '@src/assets/images/logo/favicon.png'
 // ** Third Party Components
 import { useDispatch } from 'react-redux'
@@ -30,6 +31,7 @@ import { Row, Col, Form, Input, Label, Alert, Button, CardText, CardTitle, Uncon
 
 // ** Styles
 import '@styles/react/pages/page-authentication.scss'
+import axios from 'axios'
 
 // function onChange(value) {
 //   console.log("Captcha value:", value)
@@ -78,12 +80,15 @@ console.log(recaptcha)
   const onSubmit = data => {
     if (Object.values(data).every(field => field.length > 0)) {
       console.log(data.loginEmail, data.password)
-      useJwt
-        .login({ email: data.loginEmail, password: data.password })
+      axios.post("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyAqNbdDw4nNXar2iKG2iujBLOKNcgqozbE",
+        {
+          email: data.loginEmail, password: data.password, returnSecureToken: true
+        })
         .then(res => {
-          const data = { ...res.data.userData, accessToken: res.data.accessToken, refreshToken: res.data.refreshToken }
+          console.log("The data", res)
+          const data = { ...res.data, role: "admin", ability: [{action:"manage", subject:"all"}] /**accessToken: res.data.accessToken, refreshToken: res.data.refreshToken */ }
           dispatch(handleLogin(data))
-          ability.update(res.data.userData.ability)
+          ability.update([{ action: "manage", subject: "all" }])
           history.push(getHomeRouteForLoggedInUser(data.role))
           toast.success(
             <ToastContent name={ data.fullName || data.username || 'John Doe' } role={ data.role || 'admin' } />,
