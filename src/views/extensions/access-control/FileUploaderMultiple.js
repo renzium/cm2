@@ -52,7 +52,7 @@ const FileUploaderMultiple = ({ stepper }) => {
 
    const onSubmit = data => {
     if (Object.values(data).every(field => field.length > 0)) {
-     
+     console.log(data)
     } else {
       for (const key in data) {
         if (data[key].length === 0) {

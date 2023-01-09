@@ -4,8 +4,8 @@ import CountrySelector from './CountrySelector'
 import { isObjEmpty, selectThemeColors } from '@utils'
 import classnames from 'classnames'
 import '@src/firebase'
-import { getAuth } from "firebase/auth"
-import { getDatabase, ref, push } from "firebase/database"
+// import { getAuth } from "firebase/auth"
+import { getDatabase, ref, set } from "firebase/database"
 // ** Third Party Components
 import { useForm, Controller } from 'react-hook-form'
 import { ArrowLeft, ArrowRight } from 'react-feather'
@@ -24,17 +24,25 @@ const defaultValues = {
 }
 
 const Address = ({ stepper }) => {
+  const userData = JSON.parse(localStorage.getItem("userData"))
+  defaultValues.city = userData?.userAddress?.city || ""
+  defaultValues.zipcode = userData?.userAddress?.zipcode || ""
+  defaultValues.address = userData?.userAddress?.address || ""
+  defaultValues.country = userData?.userAddress?.country || null
   // ** Hooks
-  const auth = getAuth()
-  const userId = auth?.currentUser?.uid
+  // const auth = getAuth()
+  const userId = userData.localId
   function writeUserData(city, zipcode, address, country) {
     const db = getDatabase()
-    push(ref(db, userId, `${'users/'}`), {
-      city,
-      zipcode,
-      address,
-      country
-    })
+    const userAddress = { city, zipcode, address, country }
+    set(ref(db, `users/${userId}/userAddress`), userAddress)
+      .then(
+        localStorage.setItem("userData", JSON.stringify({
+          ...userData,
+          userAddress
+
+        }))
+    )
   }
 
 

@@ -12,7 +12,7 @@ import '@styles/react/libs/flatpickr/flatpickr.scss'
 import { getAuth, updateProfile } from "firebase/auth"
 // ** Third Party Components
 import '@src/firebase'
-import { getDatabase, ref, push} from "firebase/database"
+import { getDatabase, ref, set} from "firebase/database"
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { ArrowLeft, ArrowRight } from 'react-feather'
@@ -30,6 +30,7 @@ const defaultValues = {
 }
 
 const AccountDetails = ({ stepper }) => {
+  const userData = JSON.parse(localStorage.getItem('userData'))
   const SignupSchema = yup.object().shape({
     fullName: yup.string().required(),
     email: yup.string().email(),
@@ -43,20 +44,28 @@ const AccountDetails = ({ stepper }) => {
 
   // ** Hooks
   const [data, setData] = useState(null)
-  const [userData, setUserData] = useState(null)
-  const auth = getAuth()
-  const userId = auth?.currentUser?.uid
-   function writeUserData(fullName, email, SSN, confirmSSN, DOB) {
+  // const auth = getAuth()
+  // const userId = auth?.currentUser?.uid
+  const userId = userData.localId
+  function writeUserData(fullName, email, SSN, confirmSSN, DOB) {
+    const userInformation = { fullName, email, SSN, confirmSSN, DOB }
   const db = getDatabase()
-  push(ref(db, userId, `${'users/'}`), {
-    fullName,
-    email,
-    SSN,
-    confirmSSN,
-    DOB
-  })
+  set(ref(db,  `users/${userId}/userInformation`), userInformation)
+    .then(
+       localStorage.setItem("userData", JSON.stringify({...userData, userInformation }))
+     )
 }
 
+
+   useEffect(() => {
+    if (isUserLoggedIn() !== null) {
+    }
+   }, [])
+  
+  defaultValues.fullName = userData?.displayName || ""
+  defaultValues.DOB = userData?.DOB || null
+  defaultValues.SSN = userData?.SSN || ""
+  defaultValues.confirmSSN = userData?.confirmSSN || ""
   const {
     control,
     handleSubmit,
@@ -65,12 +74,6 @@ const AccountDetails = ({ stepper }) => {
     defaultValues,
     resolver: yupResolver(SignupSchema)
   })
-
-   useEffect(() => {
-    if (isUserLoggedIn() !== null) {
-      setUserData(JSON.parse(localStorage.getItem('userData')))
-    }
-  }, [])
 
   const onSubmit = (data) => {
       setData(data)
@@ -82,7 +85,6 @@ const AccountDetails = ({ stepper }) => {
 
     const auth = getAuth()
     updateProfile(auth.currentUser, {
-      ...data,
       displayName: data.fullName
     }).then(() => {
       // Profile updated!
