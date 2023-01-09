@@ -86,12 +86,12 @@ console.log(recaptcha)
         })
         .then(res => {
           console.log("The data", res)
-          const data = { ...res.data, role: "admin", ability: [{action:"manage", subject:"all"}] /**accessToken: res.data.accessToken, refreshToken: res.data.refreshToken */ }
+          const data = { ...res.data, role: "admin", ability: [{action:"manage", subject:"all"}], username: res.data.displayName /**accessToken: res.data.accessToken, refreshToken: res.data.refreshToken */ }
           dispatch(handleLogin(data))
           ability.update([{ action: "manage", subject: "all" }])
           history.push(getHomeRouteForLoggedInUser(data.role))
           toast.success(
-            <ToastContent name={ data.fullName || data.username || 'John Doe' } role={ data.role || 'admin' } />,
+            <ToastContent name={ data.displayName || data.username || ' ' } role={ data.role || 'admin' } />,
             { icon: false, transition: Slide, hideProgressBar: true, autoClose: 2000 }
           )
         })

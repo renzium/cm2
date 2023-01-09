@@ -5,10 +5,11 @@ import { Card, CardBody, CardText, Button } from 'reactstrap'
 import medal from '@src/assets/images/illustration/badge.svg'
 
 const CardMedal = () => {
+  const userData = JSON.parse(localStorage.getItem("userData"))
   return (
     <Card className='card-congratulations-medal'>
       <CardBody>
-        <h5>Congratulations 🎉 John!</h5>
+        <h5>Congratulations 🎉 { userData?.displayName || userData?.email.split("@")[0] || userData?.username }!</h5>
         <CardText className='font-small-3'>Your balance:</CardText>
         <h3 className='mb-75 mt-2 pt-50'>
           <a>

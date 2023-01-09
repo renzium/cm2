@@ -9,7 +9,7 @@ import InputPasswordToggle from '@components/input-password-toggle'
 import Flatpickr from 'react-flatpickr'
 
 import '@styles/react/libs/flatpickr/flatpickr.scss'
-import { getAuth } from "firebase/auth"
+import { getAuth, updateProfile } from "firebase/auth"
 // ** Third Party Components
 import '@src/firebase'
 import { getDatabase, ref, push} from "firebase/database"
@@ -79,6 +79,18 @@ const AccountDetails = ({ stepper }) => {
   const {fullName, SSN, confirmSSN, DOB} = data
       writeUserData(fullName, userData && userData["email"], SSN, confirmSSN, String(new Date(data.DOB)))
     }
+
+    const auth = getAuth()
+    updateProfile(auth.currentUser, {
+      ...data,
+      displayName: data.fullName
+    }).then(() => {
+      // Profile updated!
+      // ...
+      console.log("Profile has been updated")
+    }).catch((error) => {
+      console.log(error)
+    })
   }
 
   return (
@@ -127,7 +139,7 @@ const AccountDetails = ({ stepper }) => {
               control={control}
               render={({ field }) => <InputPasswordToggle onKeyPress={(event) => {
         if (!/[0-9]/.test(event.key)) {
-          event.preventDefault()
+          // event.preventDefault()
         }
       }} maxLength='9' invalid={errors.SSN && true} {...field} />}
             />
@@ -143,7 +155,7 @@ const AccountDetails = ({ stepper }) => {
               name='confirmSSN'
               render={({ field }) => <InputPasswordToggle onKeyPress={(event) => {
         if (!/[0-9]/.test(event.key)) {
-          event.preventDefault()
+          // event.preventDefault()
         }
       }} maxLength='9' invalid={errors.confirmSSN && true} {...field} />}
             />
