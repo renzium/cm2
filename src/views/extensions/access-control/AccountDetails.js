@@ -63,9 +63,9 @@ const AccountDetails = ({ stepper }) => {
    }, [])
   
   defaultValues.fullName = userData?.displayName || ""
-  defaultValues.DOB = userData?.DOB || null
-  defaultValues.SSN = userData?.SSN || ""
-  defaultValues.confirmSSN = userData?.confirmSSN || ""
+  defaultValues.DOB = userData?.userInformation?.DOB || null
+  defaultValues.SSN = userData?.userInformation?.SSN || ""
+  defaultValues.confirmSSN = userData?.userInformation?.confirmSSN || ""
   const {
     control,
     handleSubmit,

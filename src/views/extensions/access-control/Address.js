@@ -139,11 +139,13 @@ const Address = ({ stepper }) => {
             </Label>
             <Controller
               // value={ country }
+              defaultValue={ userData?.userAddress?.country }
               id='country'
               name='country'
               control={ control }
-              render={ ({ field }) => <Select theme={ selectThemeColors } className={ classnames('react-select', { 'is-invalid': data !== null && data.country === null }) } options={ options } value={ value } onChange={ changeHandler }
+              render={ ({ field }) => <Select theme={ selectThemeColors } className={ classnames('react-select', { 'is-invalid': data !== null && data.country === null }) } options={ options } value={ "NG" } onChange={ changeHandler }
                 { ...field }
+                defaultValue={ "NG" || value }
               /> }
             />
           </Col>

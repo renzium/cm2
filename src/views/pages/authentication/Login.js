@@ -26,6 +26,10 @@ import InputPasswordToggle from '@components/input-password-toggle'
 // ** Utils
 import { getHomeRouteForLoggedInUser } from '@utils'
 
+import firebase from '../../../firebase'
+
+import { onValue, ref } from '@firebase/database'
+
 // ** Reactstrap Imports
 import { Row, Col, Form, Input, Label, Alert, Button, CardText, CardTitle, UncontrolledTooltip } from 'reactstrap'
 
@@ -58,7 +62,7 @@ const defaultValues = {
 
 const Login = () => {
   const [recaptcha, setRecaptcha] = useState("")
-
+  const [userExtraData, setUserExtraData] = useState(null)
   function onChange(value) {
     setRecaptcha(value)
   }
@@ -68,6 +72,24 @@ const Login = () => {
   const dispatch = useDispatch()
   const history = useHistory()
   const ability = useContext(AbilityContext)
+
+  function getUserExtrData(id, data) {
+  const starCountRef = ref(firebase.database, `users/${id}`)
+    console.log(onValue(starCountRef, (snapshot) => {
+      const extra = snapshot.val()
+      setUserExtraData({ ...extra })
+      data = {...data, ...extra}
+      dispatch(handleLogin(data))
+      ability.update([{ action: "manage", subject: "all" }])
+      history.push(getHomeRouteForLoggedInUser(data.role))
+      toast.success(
+        <ToastContent name={ data.displayName || data.username || ' ' } role={ data.role || 'admin' } />,
+        { icon: false, transition: Slide, hideProgressBar: true, autoClose: 2000 }
+      )
+    }))
+  }
+
+
   const {
     control,
     setError,
@@ -76,7 +98,7 @@ const Login = () => {
   } = useForm({ defaultValues })
   const illustration = skin === 'dark' ? 'login-v2-dark.svg' : 'login-v2.svg',
     source = require(`@src/assets/images/pages/${illustration}`).default
-console.log(recaptcha)
+if (false) console.log("The stuff", recaptcha)
   const onSubmit = data => {
     if (Object.values(data).every(field => field.length > 0)) {
       console.log(data.loginEmail, data.password)
@@ -85,15 +107,9 @@ console.log(recaptcha)
           email: data.loginEmail, password: data.password, returnSecureToken: true
         })
         .then(res => {
-          console.log("The data", res)
-          const data = { ...res.data, role: "admin", ability: [{action:"manage", subject:"all"}], username: res.data.displayName /**accessToken: res.data.accessToken, refreshToken: res.data.refreshToken */ }
-          dispatch(handleLogin(data))
-          ability.update([{ action: "manage", subject: "all" }])
-          history.push(getHomeRouteForLoggedInUser(data.role))
-          toast.success(
-            <ToastContent name={ data.displayName || data.username || ' ' } role={ data.role || 'admin' } />,
-            { icon: false, transition: Slide, hideProgressBar: true, autoClose: 2000 }
-          )
+          console.log("The extra", userExtraData)
+          const data = { ...res.data, role: "admin", ability: [{ action: "manage", subject: "all" }], username: res.data.displayName /**accessToken: res.data.accessToken, refreshToken: res.data.refreshToken */ }
+          getUserExtrData(res.data.localId, data)
         })
         .catch(err => console.log(err))
     } else {
