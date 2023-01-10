@@ -38,7 +38,6 @@ const defaultValues = {
  
 const Register = () => {
   const [recaptcha, setRecaptcha] = useState("")
-
  function onChange(value) {
  setRecaptcha(value)
 }
@@ -68,7 +67,13 @@ const Register = () => {
         .register({ username, email, password })
         .then(res => {
             createUserWithEmailAndPassword(auth, email, password)
-              .then((cred) => sendEmailVerification(cred.user))
+              .then((cred) => {
+                const data = { ...res.data.user, accessToken: res.data.accessToken, localId: cred.user.uid }
+                ability.update(res.data.user.ability)
+                dispatch(handleLogin(data))
+                history.push(`./verify-email-cover/${email}`)
+                sendEmailVerification(cred.user)
+              })
        
           if (res.data.error) {
             for (const property in res.data.error) {
@@ -80,10 +85,14 @@ const Register = () => {
               }
             }
           } else {
-            const data = { ...res.data.user, accessToken: res.data.accessToken }
+            /*
+            if (localId) {
+              const data = { ...res.data.user, accessToken: res.data.accessToken, localId }
             ability.update(res.data.user.ability)
             dispatch(handleLogin(data))
-            history.push(`./verify-email-cover/${email}`)
+              history.push(`./verify-email-cover/${email}`)
+            }
+            */
           }
         })
         .catch(err => console.log(err))

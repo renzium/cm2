@@ -107,6 +107,7 @@ if (false) console.log("The stuff", recaptcha)
           email: data.loginEmail, password: data.password, returnSecureToken: true
         })
         .then(res => {
+          console.log("The res", res)
           console.log("The extra", userExtraData)
           const data = { ...res.data, role: "admin", ability: [{ action: "manage", subject: "all" }], username: res.data.displayName /**accessToken: res.data.accessToken, refreshToken: res.data.refreshToken */ }
           getUserExtrData(res.data.localId, data)
