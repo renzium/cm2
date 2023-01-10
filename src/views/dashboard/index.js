@@ -1,8 +1,11 @@
 ﻿// ** React Imports
-//import { useContext } from 'react'
+import { useState, useEffect } from 'react'
 
 // ** Reactstrap Imports
 import { Row, Col } from 'reactstrap'
+
+import { ref, onValue } from "firebase/database"
+import firebase from "../../firebase"
 
 // ** Context
 import { ThemeColors } from '@src/utility/context/ThemeColors'
@@ -18,17 +21,29 @@ import '@styles/base/pages/dashboard-ecommerce.scss'
 
 const EcommerceDashboard = () => {
   // ** Context
+  const [revenue, setRevenue] = useState(null)
+  const userData = JSON.parse(localStorage.getItem("userData"))
 
+  const id = userData?.localId
+  useEffect(() => {
+
+    const starCountRef = ref(firebase.database, `users/${id}/revenue`)
+    onValue(starCountRef, (snapshot) => {
+      const data = snapshot.val()
+      // console.log(userData)
+      setRevenue(data)
+    })
+  }, [])
   // ** vars
 
   return (
     <div id='dashboard-ecommerce'>
       <Row className='match-height'>
         <Col xl='6' md='6' xs='12'>
-          <CardMedal />
+          <CardMedal revenue={ revenue } />
         </Col>
         <Col xl='6' md='12' xs='12'>
-          <StatsCard cols={{ xl: '6', sm: '6' }} />
+          <StatsCard revenue={ revenue } cols={{ xl: '6', sm: '6' }} />
         </Col>
       </Row>
       <Row className='match-height'>

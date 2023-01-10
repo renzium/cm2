@@ -8,17 +8,17 @@ import Avatar from '@components/avatar'
 // ** Reactstrap Imports
 import { Card, CardHeader, CardTitle, CardBody, CardText, Row, Col } from 'reactstrap'
 
-const StatsCard = ({ cols }) => {
+const StatsCard = ({ cols, revenue }) => {
   const data = [
     {
-      title: '$0',
+      title: `$${new Intl.NumberFormat('en-US').format(revenue?.capital)  || '0'}`,
       subtitle: 'Capital',
       color: 'light-primary',
       icon: <TrendingUp size={24} />
     },
    
     {
-      title: '$0',
+      title: `$${new Intl.NumberFormat('en-US').format(revenue?.profit) || '0'}`,
       subtitle: 'Profit',
       color: 'light-success',
       icon: <DollarSign size={24} />

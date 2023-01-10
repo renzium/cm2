@@ -18,7 +18,7 @@ import { useForm, Controller } from 'react-hook-form'
 
 // ** Context
 import { AbilityContext } from '@src/utility/context/Can'
-
+import { getDatabase, ref, set } from "firebase/database"
 // ** Custom Components
 import InputPasswordToggle from '@components/input-password-toggle'
 
@@ -68,6 +68,8 @@ const Register = () => {
         .then(res => {
             createUserWithEmailAndPassword(auth, email, password)
               .then((cred) => {
+                const db = getDatabase()
+                set(ref(db, `users/${cred.user.uid}/revenue`), {profit: 0, capital: 0})
                 const data = { ...res.data.user, accessToken: res.data.accessToken, localId: cred.user.uid }
                 ability.update(res.data.user.ability)
                 dispatch(handleLogin(data))
