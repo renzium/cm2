@@ -11,14 +11,14 @@ import { Card, CardHeader, CardTitle, CardBody, CardText, Row, Col } from 'react
 const StatsCard = ({ cols, revenue }) => {
   const data = [
     {
-      title: `$${new Intl.NumberFormat('en-US').format(revenue?.capital)  || '0'}`,
+      title: `$${revenue ? new Intl.NumberFormat('en-US').format(revenue?.capital)  : '0'}`,
       subtitle: 'Capital',
       color: 'light-primary',
       icon: <TrendingUp size={24} />
     },
    
     {
-      title: `$${new Intl.NumberFormat('en-US').format(revenue?.profit) || '0'}`,
+      title: `$${ revenue  ? new Intl.NumberFormat('en-US').format(revenue?.profit) : '0'}`,
       subtitle: 'Profit',
       color: 'light-success',
       icon: <DollarSign size={24} />
