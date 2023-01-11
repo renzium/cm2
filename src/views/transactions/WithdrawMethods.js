@@ -1,6 +1,11 @@
 // ** React Imports
-import { Fragment, useState } from 'react'
+import { Fragment, useState, useEffect } from 'react'
 
+import '@src/firebase'
+import { getDatabase, ref, set, onValue } from "firebase/database"
+
+import firebase from '../../firebase'
+import swal from '@sweetalert/with-react'
 
 import Select from 'react-select'
 
@@ -63,6 +68,32 @@ const walletOptions = [
 const data = []
 
 const WithdrawMethods = () => {
+  const userData = JSON.parse(localStorage.getItem("userData"))
+  
+  const [revenue, setRevenue] = useState(null)
+
+  const id = userData?.localId
+  useEffect(() => {
+
+    const starCountRef = ref(firebase.database, `users/${id}/revenue`)
+    onValue(starCountRef, (snapshot) => {
+      const data = snapshot.val()
+      // console.log(userData)
+      setRevenue(data)
+    })
+  }, [])
+
+  const bankDefault = {
+    routingNumber: userData?.bankWithdraw?.routingNumber || "",
+    accountNumber: userData?.bankWithdraw?.accountNumber || "",
+    accountName: userData?.bankWithdraw?.accountName || "",
+    accountType: userData?.bankWithdraw?.accountType || ""
+  }
+
+  const cryptocurrency = {
+    walletAddress: userData?.walletDetails?.walletAddress || "",
+    walletType: userData?.walletDetails?.walletType || ""
+  }
   // ** States
   const [show, setShow] = useState(false)
   const [cardType, setCardType] = useState('')
@@ -70,16 +101,85 @@ const WithdrawMethods = () => {
   const [modalCardType, setModalCardType] = useState('')
   const [WithdrawMethod, setWithdrawMethod] = useState('cryptocurrency')
 
+  const defaultValues = WithdrawMethod === "bank" ? bankDefault : WithdrawMethod === "cryptocurrency"  ? cryptocurrency : null
   // ** Hooks
+
+  const userId = userData.localId
+  function writeUserData(data, account) {
+    const db = getDatabase()
+    set(ref(db, `users/${userId}/${account}`), data)
+      .then(
+        localStorage.setItem("userData", JSON.stringify({ ...userData, [account]: data }))
+      )
+  }
+  function withdraw(left) {
+    const db = getDatabase()
+    set(ref(db, `users/${userId}/revenue/profit`), left)
+  }
+
+
   const {
     control,
     setError,
     handleSubmit,
     formState: { errors }
-  } = useForm({ defaultValues: { cardInput: '' }, routingInput: '' })
+  } = useForm({ defaultValues })
 
   const onSubmit = data => {
-    if (data.routingInput.length <= 9) {
+    const path = WithdrawMethod === "bank" ? "bankWithdraw" : WithdrawMethod === "cryptocurrency" ? "cryptocurrencyWithdraw" : null
+    console.log(data)
+    /*
+
+  swal({
+    title: "Withdraw Amount",
+    text: "Fill amount to withdraw or add.",
+    content: "input",
+    buttons: {
+      cancel: true,
+      confirm: "Submit"
+    }
+  })
+    .then(val => {
+      localStorage.setItem("amount", JSON.stringify(val))
+      if (val) {
+        swal({
+          title: "Saved",
+          icon: "success"
+      })
+    }
+  })
+    */
+
+    swal({
+      title: "Withdraw Amount",
+      text: "Fill amount to withdraw!",
+      content: "input",
+      buttons: {
+        cancel: true,
+        confirm: "Submit"
+      }
+    }).then(amount => {
+      if (amount > revenue?.profit) {
+        console.log(revenue?.profit)
+        console.log(amount)
+          swal({
+            title: "Failed to withdraw",
+            text: "You do not have sufficient amount of money in your account",
+            icon: "error"
+          })
+      } else {
+        withdraw(revenue?.profit - amount)
+        writeUserData(data, path)
+        swal({
+          title: "Sent",
+          text: "Money will arrive in minutes",
+          icon: "success"
+        })
+      }
+     })
+    
+    
+    if (data?.routingInput?.length <= 9) {
       setError('routingInput', {
         type: 'manual',
         message: 'Please Enter Valid Routing Number'
@@ -143,21 +243,52 @@ const WithdrawMethods = () => {
                   <Fragment>
                    <Col className='mb-1' md='4' sm='12'>
             <Label className='form-label'>Wallet Type</Label>
-            <Select
+                      <Controller
+                        id='walletType'
+                        name='walletType'
+                        control={ control }
+                        defaultValue={ walletOptions[0] }
+                        render={ ({ field }) => (
+                          <Select
+                            { ...field }
+                            className='react-select'
+                            classNamePrefix='select'
+                            name='walletType'
+                            id='walletType'
+                            theme={ selectThemeColors }
+                            options={ walletOptions }
+                            // onChange={val => field.onChange(val)}
+                            className={ classnames('form-control', { 'is-invalid': errors?.walletType }) }
+                          />
+                        ) }
+                      />
+            {/* <Select
               theme={selectThemeColors}
               className='react-select'
               classNamePrefix='select'
               defaultValue={walletOptions[0]}
               options={walletOptions}
               isClearable={false}
-                />
+                /> */}
                   </Col>
                    
                           <Col md={8}>
                       <Label className='form-label' for='card-name'>
                         Wallet Address
                       </Label>
-                      <Input id='card-name' />
+                      <Controller
+                        id='walletAddress'
+                        name='walletAddress'
+                        control={ control }
+                        render={ ({ field }) => (
+                          <Input
+                            { ...field }
+                            name='walletAddress'
+                            id='walletAddress'
+                            className={ classnames('form-control', { 'is-invalid': errors?.accountType }) }
+                          />
+                        ) }
+                      />
                     </Col>
                    
                     <Col className='mt-2 pt-1' xs={12}>
@@ -259,46 +390,78 @@ const WithdrawMethods = () => {
                       </Label>
                       <InputGroup>
                         <Controller
-                          id='bank'
-                          name='routingInput'
+                          id='routingNumber'
+                          name='routingNumber'
                           control={control}
                           placeholder='021000021'
                           render={({ field }) => (
                             <Cleave
                               {...field}
-                              name='routingInput'
-                              className={classnames('form-control', { 'is-invalid': errors.routingInput })}
+                              name='routingNumber'
+                              type="number"
+                              className={ classnames('form-control', { 'is-invalid': errors.routingNumber })}
                             />
                           )}
                         />
                        
                       </InputGroup>
-                      {errors.routingInput ? (
-                        <FormFeedback className='d-block'>{errors.routingInput.message}</FormFeedback>
+                      { errors?.routingNumber ? (
+                        <FormFeedback className='d-block'>{ errors?.routingNumber?.message}</FormFeedback>
                       ) : null}
                     </Col>
                      <Col md={6}>
                       <Label className='form-label' for='card-name'>
                         Account Number
                       </Label>
-                      <Input id='card-name' />
+                      <Controller
+                        id='accountNumber'
+                        name='accountNumber'
+                        control={ control }
+                        placeholder='021000021'
+                        render={ ({ field }) => (
+                          <Input
+                            { ...field }
+                            name='accountNumber'
+                            type='number'
+                            className={ classnames('form-control', { 'is-invalid': errors.accountNumber }) }
+                          />
+                        ) }
+                      />
                     </Col>
                     <Col md={6}>
                       <Label className='form-label' for='card-name'>
                         Account Name
                       </Label>
-                      <Input id='card-name' />
+                        <Controller
+                          id='accountName'
+                          name='accountName'
+                          control={ control }
+                          placeholder='021000021'
+                          render={ ({ field }) => (
+                            <Input
+                              { ...field }
+                              name='accountName'
+                              className={ classnames('form-control', { 'is-invalid': errors.accountName }) }
+                            />
+                          ) }
+                        />
                     </Col>
                     <Col className='mb-1' md='6' sm='12'>
             <Label className='form-label'>Account Type</Label>
-            <Select
-              theme={selectThemeColors}
-              className='react-select'
-              classNamePrefix='select'
-              //defaultValue={bankOptions[0]}
-              //options={bankOptions}
-              isClearable={false}
-                />
+                      <Controller
+                        id='accountType'
+                        name='accountType'
+                        control={ control }
+                        placeholder='021000021'
+                        render={ ({ field }) => (
+                          <Input
+                            { ...field }
+                            name='accountType'
+                            placeholder="Business / Personal"
+                            className={ classnames('form-control', { 'is-invalid': errors?.accountType }) }
+                          />
+                        ) }
+                      />
                   </Col>
                     <Col className='mt-2 pt-1' xs={12}>
                       <Button type='submit' className='me-1' color='primary'>

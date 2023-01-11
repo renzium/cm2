@@ -1,11 +1,13 @@
 // ** Reactstrap Imports
 import { Card, CardBody, CardText, Button } from 'reactstrap'
+import { useHistory } from 'react-router-dom'
 
 // ** Images
 import medal from '@src/assets/images/illustration/badge.svg'
 
 const CardMedal = ({revenue}) => {
   const userData = JSON.parse(localStorage.getItem("userData"))
+  const history = useHistory()
   return (
     <Card className='card-congratulations-medal'>
       <CardBody>
@@ -16,7 +18,7 @@ const CardMedal = ({revenue}) => {
             ${ revenue ? new Intl.NumberFormat('en-US').format(revenue?.profit + revenue?.capital)  : "0" }
           </a>
         </h3>
-        [<Button href='./transactions' color='primary'>Withdraw or Add Capital</Button>]
+        [<Button onClick={ () => history.push("/transactions")} color='primary'>Withdraw or Add Capital</Button>]
 
         <img className='congratulation-medal' src={medal} alt='Medal Pic' />
       </CardBody>

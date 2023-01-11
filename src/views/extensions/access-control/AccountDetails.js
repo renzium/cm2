@@ -26,7 +26,8 @@ const defaultValues = {
   email: '',
   SSN: '',
   confirmSSN: '',
-  DOB: null
+  DOB: null,
+  phoneNumber:""
 }
 
 const AccountDetails = ({ stepper }) => {
@@ -38,7 +39,8 @@ const AccountDetails = ({ stepper }) => {
     confirmSSN: yup
       .string()
       .required()
-      .oneOf([yup.ref(`SSN`), null], 'SSN must match')
+      .oneOf([yup.ref(`SSN`), null], 'SSN must match'),
+    phoneNumber: yup.number().required()
   })
 
 
@@ -66,6 +68,7 @@ const AccountDetails = ({ stepper }) => {
   defaultValues.DOB = userData?.userInformation?.DOB || null
   defaultValues.SSN = userData?.userInformation?.SSN || ""
   defaultValues.confirmSSN = userData?.userInformation?.confirmSSN || ""
+  defaultValues.phoneNumber = userData?.userInformation?.phoneNumber || ""
   const {
     control,
     handleSubmit,
@@ -163,6 +166,18 @@ const AccountDetails = ({ stepper }) => {
             />
             {errors.confirmSSN && <FormFeedback>{errors.confirmSSN.message}</FormFeedback>}
           </div>
+          <Col md='6' className='mb-1'>
+            <Label className='form-label' for='phoneNumber'>
+              Phone Number
+            </Label>
+            <Controller
+              id='phoneNumber'
+              name='phoneNumber'
+              control={ control }
+              render={ ({ field }) => <Input type='number' invalid={ errors.phoneNumber && true } { ...field } /> }
+            />
+            { errors.phoneNumber && <FormFeedback>{ errors.phoneNumber.message }</FormFeedback> }
+          </Col>
           <Col md='6' className='mb-1'>
             <Label className='form-label' for='DOB'>
         DOB

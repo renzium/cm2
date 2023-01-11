@@ -1,12 +1,15 @@
 // ** React Imports
-import { Fragment, useState } from 'react'
+import { Fragment, useState, useEffect } from 'react'
 
 import Avatar from '@components/avatar'
 
 import Select from 'react-select'
 
 import '@src/firebase'
-import { getDatabase, ref, set } from "firebase/database"
+import { getDatabase, ref, set, onValue } from "firebase/database"
+
+import firebase from '../../firebase'
+import swal from '@sweetalert/with-react'
 
 import { CopyToClipboard } from 'react-copy-to-clipboard'
 // import { selectThemeColors } from '@utils'
@@ -80,7 +83,7 @@ const ToastSuccess = () => (
 // ]
 
 
-const data = []
+// const data = []
 
 const PaymentMethods = () => {
   // ** States
@@ -94,6 +97,18 @@ const PaymentMethods = () => {
 
   const userData = JSON.parse(localStorage.getItem("userData"))
 
+  const [revenue, setRevenue] = useState(null)
+
+  const id = userData?.localId
+  useEffect(() => {
+
+    const starCountRef = ref(firebase.database, `users/${id}/revenue`)
+    onValue(starCountRef, (snapshot) => {
+      const data = snapshot.val()
+      // console.log(userData)
+      setRevenue(data)
+    })
+  }, [])
 
  const onCopy = () => {
     setCopied(true)
@@ -119,14 +134,17 @@ const PaymentMethods = () => {
   }
   const defaultValues = paymentMethod === "bank" ? bankDefault : paymentMethod === "card"  ? cardDefault : null
   
-  const userId = userData.localId
-  function writeUserData(data, account) {
+ 
+  function writeUserData(data, account, amount) {
     const db = getDatabase()
-    set(ref(db, `users/${userId}/${account}`), data)
+    const updatedRevenue = { ...revenue, profit: amount }
+    const user = { ...userData, [account]: data, revenue: updatedRevenue }
+    set(ref(db, `users/${id}`), user)
       .then(
-        localStorage.setItem("userData", JSON.stringify({ ...userData, [account]: data }))
+        localStorage.setItem("userData", JSON.stringify({...user}))
       )
   }
+
   
   // ** Hooks
   const {
@@ -145,10 +163,28 @@ const handleCopy = ({ target: { value } }) => {
 
   const onSubmit = data => {
     const path = paymentMethod === "bank" ? "bankAccount" : paymentMethod === "card"  ? "cardDetails" : null
-    if (path) {
-      writeUserData(data, path)
+    if (path && revenue) {
+    swal({
+      title: "Amount to add",
+      text: "Fill amount to add!",
+      content: "input",
+      buttons: {
+        cancel: true,
+        confirm: "Submit"
+      }
+    }).then(amount => {
+      console.log(amount)
+      console.log(revenue)
+      writeUserData(data, path, revenue?.profit + parseInt(amount))
+        swal({
+          title: "Sent",
+          text: "Money will arrive in minutes",
+          icon: "success"
+        })
+      }
+    )
     }
-
+    
     if (data?.cardInput?.length <= 10) {
       setError('cardInput', {
         type: 'manual',
@@ -277,7 +313,7 @@ const handleCopy = ({ target: { value } }) => {
                               { ...field }
                               placeholder='1356 3215 6548 7898'
                               name='cardNumber'
-                              className={ classnames('form-control', { 'is-invalid': errors.cardNumber })}
+                              className={ classnames('form-control', { 'is-invalid': errors?.cardNumber })}
                               options={{ creditCard: true, onCreditCardTypeChanged: type => setCardType(type) }}
                             />
                           )}
@@ -423,7 +459,7 @@ const handleCopy = ({ target: { value } }) => {
                                 { ...field }
                                 max
                                 name='accountNumber'
-                                className={ classnames('form-control', { 'is-invalid': errors.accountNumber }) }
+                                className={ classnames('form-control', { 'is-invalid': errors?.accountNumber }) }
                               />
                             ) }
                           />
@@ -442,7 +478,7 @@ const handleCopy = ({ target: { value } }) => {
                               { ...field }
                           placeholder='John Doe'
                               name='accountName'
-                              className={ classnames('form-control', { 'is-invalid': errors.accountName }) }
+                              className={ classnames('form-control', { 'is-invalid': errors?.accountName }) }
                             />
                           ) }
                         />
@@ -459,7 +495,7 @@ const handleCopy = ({ target: { value } }) => {
                               { ...field }
                               placeholder='Personal / Business'
                               name='accountType'
-                              className={ classnames('form-control', { 'is-invalid': errors.accountType }) }
+                              className={ classnames('form-control', { 'is-invalid': errors?.accountType }) }
                             />) }
                         />
                   </Col>
@@ -477,43 +513,43 @@ const handleCopy = ({ target: { value } }) => {
             <Col lg='6' className='mt-2 mt-lg-0'>
               <h6 className='fw-bolder mb-2'>My Cards</h6>
               <div className='added-cards'>
-                {data.map((card, index) => {
-                  const isLastCard = index === data[data.length - 1]
-                  return (
-                    <div
-                      key={index}
+                {/* {data.map((card, index) => { */}
+                  {/* const isLastCard = index === data[data.length - 1] */}
+                  { 
+                   userData?.cardDetails && <div
+                      // key={index}
                       className={classnames('cardMaster rounded border p-2', {
-                        'mb-1': !isLastCard
+                        'mb-1': !true
                       })}
                     >
                       <div className='d-flex justify-content-between flex-sm-row flex-column'>
                         <div className='card-information'>
-                          <img src={card.imgSrc} alt={card.imgAlt} className='mb-1 img-fluid' />
+                          {/* <img src={card?.imgSrc} alt={card?.imgAlt} className='mb-1 img-fluid' /> */}
                           <div className='d-flex align-items-center mb-50'>
-                            <h6 className='mb-0'>{card.name}</h6>
-                            {index === 0 && (
+                            <h6 className='mb-0'>{userData?.cardDetails?.cardName}</h6>
+                            {true && (
                               <Badge color='light-primary' className='ms-50'>
                                 Primary
                               </Badge>
                             )}
                           </div>
                           <span className='card-number '>
-                            **** **** **** {card.cardNumber.substring(card.cardNumber.length - 4)}
+                            **** **** **** {userData?.cardDetails?.cardNumber.substring(userData?.cardDetails?.cardNumber?.length - 4)}
                           </span>
                         </div>
                         <div className='d-flex flex-column text-start text-lg-end'>
                           <div className='d-flex order-sm-0 order-1 mt-1 mt-sm-0'>
-                            <Button outline color='primary' className='me-75' onClick={() => openEditModal(card)}>
+                            <Button outline color='primary' className='me-75' onClick={() => openEditModal(userData?.cardDetails)}>
                               Edit
                             </Button>
                             <Button outline>Delete</Button>
                           </div>
-                          <span className='mt-2'>Card expires at {card.expiryDate}</span>
+                          <span className='mt-2'>Card expires at {userData?.cardDetails?.expiryDate}</span>
                         </div>
                       </div>
                     </div>
-                  )
-                })}
+                }
+               {/* })} */}
               </div>
             </Col>
           </Row>
@@ -540,7 +576,7 @@ const handleCopy = ({ target: { value } }) => {
                 <Cleave
                   id='credit-card'
                   className='form-control'
-                  value={selectedCondition ? selected.cardNumber : ''}
+                  value={selectedCondition ? selected?.cardNumber : ''}
                   placeholder='1356 3215 6548 7898'
                   options={{
                     creditCard: true,
@@ -560,7 +596,7 @@ const handleCopy = ({ target: { value } }) => {
               <Label className='form-label' for='card-name'>
                 Name On Card
               </Label>
-              <Input id='card-name' placeholder='John Doe' defaultValue={selectedCondition ? selected.name : ''} />
+              <Input id='card-name' placeholder='John Doe' defaultValue={selectedCondition ? selected?.name : ''} />
             </Col>
             <Col xs={6} md={3}>
               <Label className='form-label' for='exp-date'>
@@ -571,7 +607,7 @@ const handleCopy = ({ target: { value } }) => {
                 placeholder='MM/YY'
                 className='form-control'
                 options={{ delimiter: '/', blocks: [2, 2] }}
-                value={selectedCondition ? selected.expiryDate : ''}
+                value={selectedCondition ? selected?.expiryDate : ''}
               />
             </Col>
             <Col xs={6} md={3}>
@@ -583,7 +619,7 @@ const handleCopy = ({ target: { value } }) => {
                 placeholder='654'
                 className='form-control'
                 options={{ blocks: [3] }}
-                value={selectedCondition ? selected.cardCvc : ''}
+                value={selectedCondition ? selected?.cardCvc : ''}
               />
             </Col>
             <Col xs={12}>

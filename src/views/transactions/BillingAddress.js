@@ -201,28 +201,9 @@ const BillingAddress = () => {
                     invalid={ errors.country && true }
                     { ...field }
                   />
-              //        <Select
-              //       id='country'
-              //       {...field}
-              //   isClearable={false}
-              //   className='react-select'
-              //   classNamePrefix='select'
-              //   options={countryOptions}
-              //   theme={selectThemeColors}
-              //   defaultValue={countryOptions[0]}
-              // />
                 ) }
               />
               { errors.country && <FormFeedback>Please enter a valid Billing Country</FormFeedback> }
-              {/* <Select
-                id='country'
-                isClearable={false}
-                className='react-select'
-                classNamePrefix='select'
-                options={countryOptions}
-                theme={selectThemeColors}
-                defaultValue={countryOptions[0]}
-              /> */}
             </Col>
             <Col xs='12' className='mb-1'>
               <Label className='form-label' for='billingAddress'>
@@ -241,7 +222,6 @@ const BillingAddress = () => {
                 ) }
               />
               { errors.billingAddress && <FormFeedback>Please enter a valid Billing Address</FormFeedback> }
-              {/* <Input id='billingAddress' name='billingAddress' /> */}
             </Col>
             <Col md='6' className='mb-1'>
               <Label className='form-label' for='billingState'>

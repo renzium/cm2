@@ -20,21 +20,23 @@ const defaultValues = {
   city: '',
   zipcode: '',
   address: '',
+  state:"",
   country: null
 }
 
 const Address = ({ stepper }) => {
   const userData = JSON.parse(localStorage.getItem("userData"))
   defaultValues.city = userData?.userAddress?.city || ""
+  defaultValues.state = userData?.userAddress?.state || ""
   defaultValues.zipcode = userData?.userAddress?.zipcode || ""
   defaultValues.address = userData?.userAddress?.address || ""
   defaultValues.country = userData?.userAddress?.country || null
   // ** Hooks
   // const auth = getAuth()
   const userId = userData.localId
-  function writeUserData(city, zipcode, address, country) {
+  function writeUserData(city, zipcode, address, country, state) {
     const db = getDatabase()
-    const userAddress = { city, zipcode, address, country }
+    const userAddress = { city, zipcode, address, country, state }
     set(ref(db, `users/${userId}/userAddress`), userAddress)
       .then(
         localStorage.setItem("userData", JSON.stringify({
@@ -67,7 +69,7 @@ const Address = ({ stepper }) => {
     if (isObjEmpty(errors)) {
       stepper.next()
       const { city, zipcode, address } = data
-      writeUserData(city, zipcode, address, data.country.value)
+      writeUserData(city, zipcode, address, data.country.value, state)
     } else {
       for (const key in data) {
         if (data[key].length === 0) {
@@ -132,6 +134,21 @@ const Address = ({ stepper }) => {
               render={ ({ field }) => <Input maxLength='6' invalid={ errors.zipcode && true } { ...field } /> }
             />
             { errors.zipcode && <FormFeedback>{ errors.zipcode.message }</FormFeedback> }
+          </Col>
+          <Col md='6' className='mb-1'>
+            <Label className='form-label' for='city'>
+              State
+            </Label>
+            <Controller
+              // value={ city }
+              id='state'
+              name='state'
+              control={ control }
+              render={ ({ field }) => (
+                <Input invalid={ errors.state && true } { ...field } />
+              ) }
+            />
+            { errors.state && <FormFeedback>{ errors.state.message }</FormFeedback> }
           </Col>
           <Col md='6' className='mb-1'>
             <Label className='form-label' for='country'>
