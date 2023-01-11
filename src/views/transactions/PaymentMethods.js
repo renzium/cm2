@@ -5,8 +5,11 @@ import Avatar from '@components/avatar'
 
 import Select from 'react-select'
 
+import '@src/firebase'
+import { getDatabase, ref, set } from "firebase/database"
+
 import { CopyToClipboard } from 'react-copy-to-clipboard'
-import { selectThemeColors } from '@utils'
+// import { selectThemeColors } from '@utils'
 
 // ** Reactstrap Imports
 import {
@@ -71,10 +74,10 @@ const ToastSuccess = () => (
   </Fragment>
 )
 
-const bankOptions = [
-  { value: 'Personal', label: 'Personal' },
-  { value: 'Business', label: 'Business' }
-]
+// const bankOptions = [
+//   { value: 'Personal', label: 'Personal' },
+//   { value: 'Business', label: 'Business' }
+// ]
 
 
 const data = []
@@ -89,6 +92,8 @@ const PaymentMethods = () => {
   const [modalCardType, setModalCardType] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('cryptocurrency')
 
+  const userData = JSON.parse(localStorage.getItem("userData"))
+
 
  const onCopy = () => {
     setCopied(true)
@@ -98,15 +103,38 @@ const PaymentMethods = () => {
       hideProgressBar: true,
       closeButton: false
     })
+ }
+  const bankDefault = {
+    routingNumber: userData?.bankAccount?.routingNumber || "",
+    accountNumber: userData?.bankAccount?.accountNumber || "",
+    accountName: userData?.bankAccount?.accountName || "",
+    accountType: userData?.bankAccount?.accountType || ""
   }
 
+  const cardDefault = {
+    cardNumber: userData?.cardDetails?.cardNumber || "1234",
+    cardName: userData?.cardDetails?.cardName || "",
+    expiryDate: userData?.cardDetails?.expiryDate || "",
+    CVV: userData?.cardDetails?.CVV || ""
+  }
+  const defaultValues = paymentMethod === "bank" ? bankDefault : paymentMethod === "card"  ? cardDefault : null
+  
+  const userId = userData.localId
+  function writeUserData(data, account) {
+    const db = getDatabase()
+    set(ref(db, `users/${userId}/${account}`), data)
+      .then(
+        localStorage.setItem("userData", JSON.stringify({ ...userData, [account]: data }))
+      )
+  }
+  
   // ** Hooks
   const {
     control,
     setError,
     handleSubmit,
     formState: { errors }
-  } = useForm({ defaultValues: { cardInput: '' }, routingInput: '' })
+  } = useForm({ defaultValues })
 
 const handleCopy = ({ target: { value } }) => {
     setValue(value)
@@ -116,13 +144,18 @@ const handleCopy = ({ target: { value } }) => {
   }
 
   const onSubmit = data => {
-    if (data.cardInput.length <= 10) {
+    const path = paymentMethod === "bank" ? "bankAccount" : paymentMethod === "card"  ? "cardDetails" : null
+    if (path) {
+      writeUserData(data, path)
+    }
+
+    if (data?.cardInput?.length <= 10) {
       setError('cardInput', {
         type: 'manual',
         message: 'Please Enter Valid Card Number'
       })
     }
-    if (data.routingInput.length <= 9) {
+    if (data?.routingNumber?.length <= 9) {
       setError('routingInput', {
         type: 'manual',
         message: 'Please Enter Valid Routing Number'
@@ -152,7 +185,8 @@ const handleCopy = ({ target: { value } }) => {
         <CardBody className='my-1 py-25'>
           <Row className='gx-4'>
             <Col lg='6'>
-              <Row tag={Form} className='gx-2 gy-1' onSubmit={handleSubmit(onSubmit)}>
+              <Form onSubmit={ handleSubmit(onSubmit) }>
+              <Row /* tag={Form} */ className='gx-2 gy-1'  /* onSubmit={handleSubmit(onSubmit)} */ >
                 <Col xs={12}>
                  <div className='form-check mb-1'>
                     <Input
@@ -235,15 +269,15 @@ const handleCopy = ({ target: { value } }) => {
                       </Label>
                       <InputGroup>
                         <Controller
-                          id='credit-card'
-                          name='cardInput'
+                          id='cardNumber'
+                            name='cardNumber'
                           control={control}
-                          placeholder='1356 3215 6548 7898'
                           render={({ field }) => (
                             <Cleave
-                              {...field}
-                              name='cardInput'
-                              className={classnames('form-control', { 'is-invalid': errors.cardInput })}
+                              { ...field }
+                              placeholder='1356 3215 6548 7898'
+                              name='cardNumber'
+                              className={ classnames('form-control', { 'is-invalid': errors.cardNumber })}
                               options={{ creditCard: true, onCreditCardTypeChanged: type => setCardType(type) }}
                             />
                           )}
@@ -261,25 +295,62 @@ const handleCopy = ({ target: { value } }) => {
                     <Col md={6}>
                       <Label className='form-label' for='card-name'>
                         Name On Card
-                      </Label>
-                      <Input id='card-name' placeholder='John Doe' />
+                        </Label>
+                        <Controller
+                          id='cardName'
+                          name='cardName'
+                          control={ control }
+                          render={ ({ field }) => (
+                            <Input
+                              { ...field }
+                              Input
+                              name='cardName'
+                              className={ classnames('form-control', { 'is-invalid': errors.cardName }) }
+                              options={ { creditCard: true, onCreditCardTypeChanged: type => setCardType(type) } }
+                            />
+                          ) }
+                        />
+                      {/* <Input id='card-name' placeholder='John Doe' /> */}
                     </Col>
                     <Col xs={6} md={3}>
                       <Label className='form-label' for='exp-date'>
                         Exp. Date
-                      </Label>
-                      <Cleave
-                        id='exp-date'
-                        placeholder='MM/YY'
-                        className='form-control'
-                        options={{ delimiter: '/', blocks: [2, 2] }}
-                      />
+                          </Label>
+                          <Controller
+                            id='expDate'
+                            name='expDate'
+                            control={ control }
+                            render={ ({ field }) => (
+                              <Cleave
+                                {...field}
+                                id='expDate'
+                                placeholder='MM/YY'
+                                className='form-control'
+                                options={ { delimiter: '/', blocks: [2, 2] } }
+                              />
+                            ) }
+                          />
+                
                     </Col>
                     <Col xs={6} md={3}>
                       <Label className='form-label' for='cvv'>
                         CVV
-                      </Label>
-                      <Cleave id='cvv' placeholder='654' className='form-control' options={{ blocks: [3] }} />
+                        </Label>
+                        <Controller
+                          id='CVV'
+                          name='CVV'
+                          control={ control }
+                          render={ ({ field }) => (
+                            <Cleave
+                              { ...field }
+                              id='CVV'
+                              placeholder='654'
+                              className='form-control'
+                              options={ { blocks: [3] } }
+                            />
+                          ) }
+                        />
+                      {/* <Cleave id='CVV' {...field} placeholder='654' className='form-control' options={{ blocks: [3] }} /> */}
                     </Col>
                     <Col xs={12}>
                       <div className='d-flex align-items-center'>
@@ -306,10 +377,10 @@ const handleCopy = ({ target: { value } }) => {
                       <Button color='secondary' outline>
                         Cancel
                       </Button>
-                    </Col>
+                      </Col>
                   </Fragment>
                 )}
-                 {paymentMethod === 'bank' && (
+                { paymentMethod === 'bank' && (
                   <Fragment>
                     <Col xs={6}>
                       <Label className='form-label' for='bank'>
@@ -318,56 +389,90 @@ const handleCopy = ({ target: { value } }) => {
                       <InputGroup>
                         <Controller
                           id='bank'
-                          name='routingInput'
+                          name='routingNumber'
                           control={control}
                           placeholder='021000021'
                           render={({ field }) => (
                             <Cleave
                               {...field}
                               max
-                              name='routingInput'
-                              className={classnames('form-control', { 'is-invalid': errors.routingInput })}
+                              type="number"
+                              name='routingNumber'
+                              className={classnames('form-control', { 'is-invalid': errors.routingNumber })}
                             />
                           )}
                         />
                        
                       </InputGroup>
-                      {errors.routingInput ? (
-                        <FormFeedback className='d-block'>{errors.routingInput.message}</FormFeedback>
+                      {errors.routingNumber ? (
+                        <FormFeedback className='d-block'>{errors.routingNumber.message}</FormFeedback>
                       ) : null}
                     </Col>
                      <Col md={6}>
                       <Label className='form-label' for='card-name'>
                         Account Number
-                      </Label>
-                      <Input id='card-name' />
+                        </Label>
+                          <Controller
+                            id='accountNumber'
+                            name='accountNumber'
+                            control={ control }
+                            placeholder='1356 3215 6548 7898'
+                            render={ ({ field }) => (
+                              <Cleave
+                                type="number"
+                                { ...field }
+                                max
+                                name='accountNumber'
+                                className={ classnames('form-control', { 'is-invalid': errors.accountNumber }) }
+                              />
+                            ) }
+                          />
+                     
                     </Col>
                     <Col md={6}>
                       <Label className='form-label' for='card-name'>
                         Account Name
                       </Label>
-                      <Input id='card-name' />
+                        <Controller
+                          id='accountName'
+                          name='accountName'
+                          control={ control }
+                          render={ ({ field }) => (
+                            <Input
+                              { ...field }
+                          placeholder='John Doe'
+                              name='accountName'
+                              className={ classnames('form-control', { 'is-invalid': errors.accountName }) }
+                            />
+                          ) }
+                        />
                     </Col>
                     <Col className='mb-1' md='6' sm='12'>
-            <Label className='form-label'>Account Type</Label>
-            <Select
-              theme={selectThemeColors}
-              className='react-select'
-              classNamePrefix='select'
-              defaultValue={bankOptions[0]}
-              options={bankOptions}
-              isClearable={false}
-                />
+                        <Label className='form-label'>Account Type</Label>
+                        <Controller
+                          id='accountType'
+                          name='accountType'
+                          control={ control }
+                          placeholder=''
+                          render={ ({ field }) => (
+                            <Cleave
+                              { ...field }
+                              placeholder='Personal / Business'
+                              name='accountType'
+                              className={ classnames('form-control', { 'is-invalid': errors.accountType }) }
+                            />) }
+                        />
                   </Col>
                     <Col className='mt-2 pt-1' xs={12}>
-                      <Button type='submit' className='me-1' color='primary'>
+                      <Button type='submit' className='me-1' color='primary' >
                         Verify
                       </Button>
                       
                     </Col>
                   </Fragment>
                 )}
-              </Row>
+                </Row>
+                </Form>
             </Col>
             <Col lg='6' className='mt-2 mt-lg-0'>
               <h6 className='fw-bolder mb-2'>My Cards</h6>
