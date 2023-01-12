@@ -49,8 +49,8 @@ const AccountDetails = ({ stepper }) => {
   // const auth = getAuth()
   // const userId = auth?.currentUser?.uid
   const userId = userData.localId
-  function writeUserData(fullName, email, SSN, confirmSSN, DOB) {
-    const userInformation = { fullName, email, SSN, confirmSSN, DOB }
+  function writeUserData(fullName, email, SSN, confirmSSN, DOB, phoneNumber) {
+    const userInformation = { fullName, email, SSN, confirmSSN, DOB, phoneNumber }
   const db = getDatabase()
   set(ref(db,  `users/${userId}/userInformation`), userInformation)
     .then(
@@ -79,16 +79,18 @@ const AccountDetails = ({ stepper }) => {
   })
 
   const onSubmit = (data) => {
+    console.log(data)
       setData(data)
     if (isObjEmpty(errors)) {
       stepper.next()
-  const {fullName, SSN, confirmSSN, DOB} = data
-      writeUserData(fullName, userData && userData["email"], SSN, confirmSSN, String(new Date(data.DOB)))
+  const {fullName, SSN, confirmSSN, DOB, phoneNumber} = data
+      writeUserData(fullName, userData && userData["email"], SSN, confirmSSN, String(new Date(data.DOB)), phoneNumber)
     }
 
     const auth = getAuth()
     updateProfile(auth.currentUser, {
-      displayName: data.fullName
+      displayName: data.fullName,
+      phoneNumber: data?.phoneNumber
     }).then(() => {
       // Profile updated!
       // ...
@@ -162,9 +164,9 @@ const AccountDetails = ({ stepper }) => {
         if (!/[0-9]/.test(event.key)) {
           // event.preventDefault()
         }
-      }} maxLength='9' invalid={errors.confirmSSN && true} {...field} />}
+      }} maxLength='9' invalid={errors?.confirmSSN && true} {...field} />}
             />
-            {errors.confirmSSN && <FormFeedback>{errors.confirmSSN.message}</FormFeedback>}
+            {errors.confirmSSN && <FormFeedback>{errors?.confirmSSN?.message}</FormFeedback>}
           </div>
           <Col md='6' className='mb-1'>
             <Label className='form-label' for='phoneNumber'>
@@ -174,9 +176,9 @@ const AccountDetails = ({ stepper }) => {
               id='phoneNumber'
               name='phoneNumber'
               control={ control }
-              render={ ({ field }) => <Input type='number' invalid={ errors.phoneNumber && true } { ...field } /> }
+              render={ ({ field }) => <Input type='number' invalid={ errors?.phoneNumber && true } { ...field } /> }
             />
-            { errors.phoneNumber && <FormFeedback>{ errors.phoneNumber.message }</FormFeedback> }
+            { errors.phoneNumber && <FormFeedback>{ errors?.phoneNumber?.message }</FormFeedback> }
           </Col>
           <Col md='6' className='mb-1'>
             <Label className='form-label' for='DOB'>

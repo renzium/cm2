@@ -68,7 +68,7 @@ const Address = ({ stepper }) => {
     setData(data)
     if (isObjEmpty(errors)) {
       stepper.next()
-      const { city, zipcode, address } = data
+      const { city, zipcode, address, state } = data
       writeUserData(city, zipcode, address, data.country.value, state)
     } else {
       for (const key in data) {

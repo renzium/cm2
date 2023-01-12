@@ -167,6 +167,7 @@ const BillingAddress = () => {
                 name='mobileNumber'
                 render={ ({ field }) => (
                   <Input
+                    id='mobileNumber'
                     type='number'
                     invalid={ errors.mobileNumber && true }
                     { ...field }
